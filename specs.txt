@@ -1,0 +1,17 @@
+Generating .vcf file for each users:
+  1) Obtain the data from the csv file previously created;
+  
+     1.1) To generate data, open the previously created csvfile.
+     1.2) Append the whole data to a list to create a list of worker details this is done to easily iterate through data.
+     1.3) Return the list of data created.
+     
+  2) Generate vcs for each worker:
+     2.1) Acquire the details of workers generated on the previous step.
+     2.2) To obtain the .vcf detailed file for each worker use for loop.
+     2.3) Inside the for loop open the vcs file for each user with file name as 'mail id' of each user, this will generate 100 .vcf files.
+     2.4) The .vcf files are stored in a directory defined in the program, while running the program first create the folder in the 
+          same directory as the program is stored and the .vcf fileds will be added to this directory
+     
+  3) Wrie a main functiion:
+     3.1) Store csv file name in a variable, csv file name is passed as command line argument.
+     3.2) Details from 'step 1' needs to be stored in a variable and pass this variable to the second step as data.
