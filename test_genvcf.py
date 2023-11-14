@@ -1,9 +1,10 @@
 import csv
+import os
 import genvcf
 
 
 def test_details_from_csv():
-  result = genvcf.details_from_csv('test.csv')
+  result = genvcf.details_from_csv('test_data.csv')
   assert result == [['Lopez', 'Kathy', 'Horticulturist, amenity', 'kathy.lopez@warren.org', '001-383-311-4585'], 
                     ['Lawson', 'Kristy', 'Quantity surveyor', 'krist.lawso@brown-robinson.com', '372.280.1290']]
                     
@@ -27,7 +28,7 @@ END:VCARD
 def csv_test_data():
    names = [['Lopez', 'Kathy', 'Horticulturist, amenity', 'kathy.lopez@warren.org', '001-383-311-4585'], 
              ['Lawson', 'Kristy', 'Quantity surveyor', 'krist.lawso@brown-robinson.com', '372.280.1290']]
-   with open('test.csv', 'w', newline='') as csvfile:
+   with open('test_data.csv', 'w', newline='') as csvfile:
      writer = csv.writer(csvfile)
      for i in names:
        writer.writerow(i)
