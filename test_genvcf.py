@@ -13,7 +13,7 @@ def test_details_from_csv():
                     
 def test_generate_vcs():
   names = [['Lopez', 'Kathy', 'Horticulturist, amenity', 'kathy.lopez@warren.org', '001-383-311-4585']]
-  genvcf.generate_vcs(names)
+  genvcf.generate_vcf(names)
   with open('worker_vcf/kathy.lopez@warren.org.vcf','r',newline='') as f:
        vcard = f.read()
        assert f"""BEGIN:VCARD
