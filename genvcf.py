@@ -46,7 +46,7 @@ REV:20150922T195243Z
 END:VCARD""")
     with open(f'worker_vcf/{email}.qr.png','wb') as f:
       f.write(reqs.content)
-  print() 
+
   
   
 def main():

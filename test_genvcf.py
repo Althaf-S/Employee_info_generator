@@ -1,10 +1,6 @@
 import csv
 import genvcf
 
-#def test_details_from_csv():
-
-#test_details_from_csv()
-
 
 def test_details_from_csv():
   result = genvcf.details_from_csv('test.csv')
@@ -31,7 +27,6 @@ END:VCARD
 def csv_test_data():
    names = [['Lopez', 'Kathy', 'Horticulturist, amenity', 'kathy.lopez@warren.org', '001-383-311-4585'], 
              ['Lawson', 'Kristy', 'Quantity surveyor', 'krist.lawso@brown-robinson.com', '372.280.1290']]
-  # print(names)
    with open('test.csv', 'w', newline='') as csvfile:
      writer = csv.writer(csvfile)
      for i in names:
