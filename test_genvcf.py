@@ -15,19 +15,19 @@ def test_generate_vcs():
   names = [['Lopez', 'Kathy', 'Horticulturist, amenity', 'kathy.lopez@warren.org', '001-383-311-4585']]
   genvcf.generate_vcs(names)
   with open('worker_vcf/kathy.lopez@warren.org.vcf','r',newline='') as f:
-     assert f.readlines() == ['\n', 
-                              'BEGIN:VCARD\n', 
-                              'VERSION:2.1\n', 
-                              'N:Kathy;Lopez\n', 
-                              'FN:Lopez Kathy\n', 
-                              'ORG:Authors, Inc.\n', 
-                              'TITLE:Horticulturist, amenity\n', 
-                              'TEL;WORK;VOICE:001-383-311-4585\n', 
-                              'ADR;WORK:;;100 Flat Grape Dr.;Fresno;CA;95555;United States of America\n', 
-                              'EMAIL;PREF;INTERNET:kathy.lopez@warren.org\n', 
-                              'REV:20150922T195243Z\n', 
-                              'END:VCARD\n']
- 
+       vcard = f.read()
+       assert f"""BEGIN:VCARD
+VERSION:2.1
+N:Kathy;Lopez
+FN:Lopez Kathy
+ORG:Authors, Inc.
+TITLE:Horticulturist, amenity
+TEL;WORK;VOICE:001-383-311-4585
+ADR;WORK:;;100 Flat Grape Dr.;Fresno;CA;95555;United States of America
+EMAIL;PREF;INTERNET:kathy.lopez@warren.org
+REV:20150922T195243Z
+END:VCARD
+"""                    in vcard 
 def csv_test_data():
    names = [['Lopez', 'Kathy', 'Horticulturist, amenity', 'kathy.lopez@warren.org', '001-383-311-4585'], 
              ['Lawson', 'Kristy', 'Quantity surveyor', 'krist.lawso@brown-robinson.com', '372.280.1290']]
@@ -38,8 +38,8 @@ def csv_test_data():
        writer.writerow(i)
    return csvfile
 
-test_generate_vcs()
-  
+
+
  
 
 
