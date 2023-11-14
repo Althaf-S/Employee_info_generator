@@ -1,17 +1,63 @@
-Generating .vcf file for each users:
-  1) Obtain the data from the csv file previously created;
-  
-     1.1) To generate data, open the previously created csvfile.
-     1.2) Append the whole data to a list to create a list of worker details this is done to easily iterate through data.
-     1.3) Return the list of data created.
-     
-  2) Generate vcs for each worker:
-     2.1) Acquire the details of workers generated on the previous step.
-     2.2) To obtain the .vcf detailed file for each worker use for loop.
-     2.3) Inside the for loop open the vcs file for each user with file name as 'mail id' of each user, this will generate 100 .vcf files.
-     2.4) The .vcf files are stored in a directory defined in the program, while running the program first create the folder in the 
-          same directory as the program is stored and the .vcf fileds will be added to this directory
-     
-  3) Wrie a main functiion:
-     3.1) Store csv file name in a variable, csv file name is passed as command line argument.
-     3.2) Details from 'step 1' needs to be stored in a variable and pass this variable to the second step as data.
+1) OBJECTIVE:
+
+   Generate visiting cards and QRCODE for a list of employees whose the details are provided in a CSV file.
+
+
+
+2) INPUT:
+   
+   2.1) CSV file from which data is extracted needs to be provided as command line argument.
+    
+   2.2) General format of data provided in CSV file is given below;
+           [last_name, first_name, job, email_address, phone_number]
+           
+           Example of data written in this format will be like this:
+             
+                Morgan, Melinda, Advertising Copywriter, melin.morga@smith_write.com, +71-(391)-2934
+                
+   2.3) There is a sample CSV file named test_data.csv to test the program. 
+              
+
+
+3. OUTPUT:
+
+   3.1) There will be two output one is the vCard file for each employee and the other is a qr code .png format
+        file which can be scanned using a mobile phone camera to get the data regarding an employee.
+       
+   3.2) qr code data is the same data witten in vCard file format and is generated for each employee. 
+        Name of both vCard and qr code files will be the mail-id of employer.
+
+   3.3) Data inside a simple vCard file is of this format:
+        
+            BEGIN:VCARD
+            VERSION:2.1
+            N:Kathy;Lopez
+            FN:Lopez Kathy
+            ORG:Authors, Inc.
+            TITLE:Horticulturist, amenity
+            TEL;WORK;VOICE:001-383-311-4585
+            ADR;WORK:;;100 Flat Grape Dr.;Fresno;CA;95555;United States of America
+            EMAIL;PREF;INTERNET:kathy.lopez@warren.org
+            REV:20150922T195243Z
+            END:VCARD
+
+
+
+4. EXECUTION:
+
+   The program needs to be executed from command line.
+   The CSV file from which the data needs to be extracted should be provided as command line argument.
+   
+   Format for providing command line argument is 'python3 <program_file_name> <CSV_file_name>' 
+   
+   Data will be generated on the folder specified in the program and the direcory to store and data will be created 
+   in the folder which the user use for execution of program.
+    
+    
+    
+    
+    
+    
+    
+    
+

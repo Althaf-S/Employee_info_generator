@@ -25,6 +25,8 @@ EMAIL;PREF;INTERNET:kathy.lopez@warren.org
 REV:20150922T195243Z
 END:VCARD
 """                    in vcard 
+  os.unlink('worker_vcf/kathy.lopez@warren.org.vcf')
+   
 def csv_test_data():
    names = [['Lopez', 'Kathy', 'Horticulturist, amenity', 'kathy.lopez@warren.org', '001-383-311-4585'], 
              ['Lawson', 'Kristy', 'Quantity surveyor', 'krist.lawso@brown-robinson.com', '372.280.1290']]
