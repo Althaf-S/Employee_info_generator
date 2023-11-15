@@ -65,10 +65,13 @@ EMAIL;PREF;INTERNET:{email}
 REV:20150922T195243Z
 END:VCARD
 """)
-  logger.info("Done")  
+  logger.info("Done generating vCards")  
        
 def generate_qrcode(data):
+  count = 1
   for first_name,last_name,job,email,ph_no in data:
+    logger.debug("Writing row %d", count)
+    count +=1
     reqs = requests.get(f"""https://chart.googleapis.com/chart?cht=qr&chs=500x500&chl=BEGIN:VCARD
 VERSION:2.1
 N:{last_name};{first_name}
@@ -82,7 +85,7 @@ REV:20150922T195243Z
 END:VCARD""")
     with open(f'worker_vcf/{email}.qr.png','wb') as f:
       f.write(reqs.content)
-
+  logger.info("Done generating qr code files")
   
   
 def main():
