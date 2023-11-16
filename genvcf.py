@@ -20,6 +20,7 @@ def parse_args():
     parser.add_argument("ipfile", help="Name of output csv file")
     parser.add_argument("-v", "--verbose", help="Print detailed logging", action='store_true', default=False)
     parser.add_argument("-n", "--number", help="Number of records to generate", action='store', type=int, default=100)
+    parser.add_argument("-s", "--sizeqr", help="Size of qr code png", action='store', type=int, default=500)
     args = parser.parse_args()
     return args
 
@@ -67,12 +68,12 @@ END:VCARD
 """)
   logger.info("Done generating vCards")  
        
-def generate_qrcode(data):
+def generate_qrcode(data,size):
   count = 1
   for first_name,last_name,job,email,ph_no in data:
     logger.debug("Writing row %d", count)
     count +=1
-    reqs = requests.get(f"""https://chart.googleapis.com/chart?cht=qr&chs=500x500&chl=BEGIN:VCARD
+    reqs = requests.get(f"""https://chart.googleapis.com/chart?cht=qr&chs={size}x{size}&chl=BEGIN:VCARD
 VERSION:2.1
 N:{last_name};{first_name}
 FN:{first_name} {last_name}
@@ -100,7 +101,7 @@ def main():
   details = details_from_csv(args.ipfile)
   data = data_from_details(details,args.number)
   generate_vcf(data)
-  generate_qrcode(data)
+  generate_qrcode(data,args.sizeqr)
 
 if __name__ == "__main__":
   main()

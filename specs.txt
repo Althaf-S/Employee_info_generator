@@ -70,6 +70,9 @@
                  
                  python3 <program_file_name> <CSV_file_name> -n<number_of_files>/--number<number_of_files> -> Used to generate 
                  only specified number of vCards/qrcode files.
+                 
+                 python3 <program_file_name> <CSV_file_name> -s<size_of_qrcode>/--sizeqr<size_of_qrcode> -> Used to generate
+                 qr code png files with specified dimension. Type '-s300' as command line argument to get 300x300 sized qrcode. 
     
     
     
