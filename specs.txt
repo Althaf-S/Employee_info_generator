@@ -73,6 +73,10 @@
                  
                  python3 <program_file_name> <CSV_file_name> -s<size_of_qrcode>/--sizeqr<size_of_qrcode> -> Used to generate
                  qr code png files with specified dimension. Type '-s300' as command line argument to get 300x300 sized qrcode. 
+                 
+                 python3 <program_file_name> <CSV_file_name> -q/--qrcode -> to generate qrcode data along with the generation of
+                 vcard data this argument needs to be passed along with the program execution.
+                 
     
     
     
