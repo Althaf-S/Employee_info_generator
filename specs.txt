@@ -53,13 +53,13 @@
    4.3) Data will be generated on the folder specified in the program and the direcory to store and data will be created 
         in the folder which the user use for execution of program.
    
-   4.4) This project includes a log and an argparse
+   4.4) Execution of arguments:
    
           4.4.1) Log file is where all the data regarding the execution of file is stored which includes the log 
                  in the format provided here : [DEBUG] 2023-11-15 15:40:56,104 | genvcf.py:37 | Writing row 15 
-                 this is an example of debug log information of the vCard generation
+                 this is an example of debug log information of the vCard generation.
    
-          4.4.2) argspace is used to execute various operations and are provided below;
+          4.4.2) 
                   
                  python3 <program_file_name> <CSV_file_name> -h/--help -> This command provides with help regarding what
                  this program is used for and information regarding all its other arguments.
@@ -76,6 +76,10 @@
                  
                  python3 <program_file_name> <CSV_file_name> -q/--qrcode -> to generate qrcode data along with the generation of
                  vcard data this argument needs to be passed along with the program execution.
+                 
+                 python3 <program_file_name> <CSV_file_name> -a<address>/--address<address> -> to give an another address other than
+                 the default provided use this argument, an example to pass this argument in command line is as follows
+                 -a"100 Flat Grape Dr.;Fresno;CA;95555;United States of America".
                  
     
     

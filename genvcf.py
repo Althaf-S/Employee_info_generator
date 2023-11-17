@@ -22,6 +22,7 @@ def parse_args():
     parser.add_argument("-n", "--number", help="Number of records to generate", action='store', type=int, default=100)
     parser.add_argument("-s", "--sizeqr", help="Size of qr code png", action='store', type=int, default=500)
     parser.add_argument("-q", "--qrcode", help="Generate both qrcode and vcard files", action='store_true', default= False )
+    parser.add_argument("-a", "--address", help="Provide an address other than default address", action='store', default= '100 Flat Grape Dr.;Fresno;CA;95555;United States of America' )
     args = parser.parse_args() 
     return args
 
@@ -46,7 +47,7 @@ def data_from_details(details,number):
   return data
 
 
-def implement_vcf(first_name,last_name,job,email,ph_no):
+def implement_vcf(first_name,last_name,job,email,ph_no,address):
   return f"""
 BEGIN:VCARD
 VERSION:2.1
@@ -55,7 +56,7 @@ FN:{first_name} {last_name}
 ORG:Authors, Inc.
 TITLE:{job}
 TEL;WORK;VOICE:{ph_no}
-ADR;WORK:;;100 Flat Grape Dr.;Fresno;CA;95555;United States of America
+ADR;WORK:;;{address}
 EMAIL;PREF;INTERNET:{email}
 REV:20150922T195243Z
 END:VCARD
@@ -63,12 +64,12 @@ END:VCARD
   
 
 
-def generate_vcf(data):
+def generate_vcf(data,address):
   if not os.path.exists('worker_vcf'):
     os.mkdir('worker_vcf')
   count = 1
   for first_name,last_name,job,email,ph_no in data:
-       imp_vcard = implement_vcf(first_name,last_name,job,email,ph_no)
+       imp_vcard = implement_vcf(first_name,last_name,job,email,ph_no,address)
        logger.debug("Writing row %d", count)
        count +=1
        with open(f'worker_vcf/{email}.vcf','w') as j:
@@ -76,7 +77,7 @@ def generate_vcf(data):
   logger.info("Done generating vCards")  
        
   
-def implement_qrcode(first_name,last_name,job,email,ph_no,size):
+def implement_qrcode(first_name,last_name,job,email,ph_no,size,address):
    reqs = requests.get(f"""https://chart.googleapis.com/chart?cht=qr&chs={size}x{size}&chl=BEGIN:VCARD
 VERSION:2.1
 N:{last_name};{first_name}
@@ -84,19 +85,19 @@ FN:{first_name} {last_name}
 ORG:Authors, Inc.
 TITLE:{job}
 TEL;WORK;VOICE:{ph_no}
-ADR;WORK:;;100 Flat Grape Dr.;Fresno;CA;95555;United States of America
+ADR;WORK:;;{address}
 EMAIL;PREF;INTERNET:{email}
 REV:20150922T195243Z
 END:VCARD""")
    return reqs.content
        
        
-def generate_qrcode(data,size):
+def generate_qrcode(data,size,address):
   if not os.path.exists('worker_vcf'):
     os.mkdir('worker_vcf')
   count = 1
   for first_name,last_name,job,email,ph_no in data:
-    imp_qrcode = implement_qrcode(first_name,last_name,job,email,ph_no,size)
+    imp_qrcode = implement_qrcode(first_name,last_name,job,email,ph_no,size,address)
     logger.debug("Writing row %d", count)
     count +=1
     with open(f'worker_vcf/{email}.qr.png','wb') as f:
@@ -113,11 +114,11 @@ def main():
   
   details = details_from_csv(args.ipfile)
   data = data_from_details(details,args.number)
-  generate_vcf(data)
+  generate_vcf(data,args.address)
   if args.qrcode:
-     generate_qrcode(data,args.sizeqr)
+     generate_qrcode(data,args.sizeqr,args.address)
      
 if __name__ == '__main__':
    main()    
- 
-
+   
+   
