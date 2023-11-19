@@ -2,6 +2,7 @@ import csv
 import logging
 import argparse
 import os
+import psycopg2 as pg
 import requests
 import sys
 
@@ -14,6 +15,7 @@ def details_from_csv(csvfile):
     for item in reader:
       data.append(item)
   return data
+  
 
 def parse_args():
     parser = argparse.ArgumentParser(prog="genvcf.py", description="Generates sample employee database as csv")
@@ -47,6 +49,70 @@ def data_from_details(details,number):
   return data
 
 
+# DAtabase implementation starts
+
+def create_database():
+  conn = pg.connect(database="postgres",user='althaf',password='Absara695')
+  conn.autocommit = True
+  cursor = conn.cursor()
+  create_database =  '''CREATE DATABASE employee'''
+  cursor.execute(create_database)
+  print("Creation of database is successful")
+  conn.close()
+
+
+def create_table():
+  create_database()
+  conn = pg.connect("dbname=employee user='althaf'")  
+  cursor = conn.cursor()
+  create_table = """CREATE TABLE details (serial_number SERIAL PRIMARY KEY,
+                                                    lastname VARCHAR(50),
+                                                    firstname VARCHAR(50),
+                                                    title VARCHAR(50),
+                                                    email VARCHAR(50),
+                                                    phone_number VARCHAR(50))"""
+  cursor.execute(create_table)
+  print("Table created successfully")
+  conn.commit()
+  conn.close()
+
+def truncate_table():
+  conn = pg.connect("dbname=employee user='althaf'")
+  cursor = conn.cursor()
+  truncate_table = "TRUNCATE TABLE details RESTART IDENTITY"
+  cursor.execute(truncate_table)
+  conn.commit()
+  conn.close()
+  
+  
+  
+def adding_data_to_database(data):
+  #data = data_from_details(details,number)
+  truncate_table()
+  conn = pg.connect("dbname=employee user='althaf'")
+  cursor = conn.cursor()
+  for last_name,first_name,title,email,ph_no in data:
+     insert_info = f"""INSERT INTO details (lastname,firstname,title,email,phone_number) VALUES (%s,%s,%s,%s,%s)"""
+     cursor.execute(insert_info,(last_name,first_name,title,email,ph_no))
+     conn.commit()
+  print("data inserted")
+  conn.close()
+     
+
+def retriving_data_from_database():
+  data = []
+  conn = pg.connect("dbname=employee user='althaf'")
+  cursor = conn.cursor()
+  cursor.execute("SELECT lastname,firstname,title,email,phone_number FROM details")
+  conn.commit()
+  x = cursor.fetchall()
+  for i in x:
+    data.append(i)
+  conn.close()
+  return data
+  
+# Database implementation ends
+
 def implement_vcf(first_name,last_name,job,email,ph_no,address):
   return f"""
 BEGIN:VCARD
@@ -75,6 +141,7 @@ def generate_vcf(data,address):
        with open(f'worker_vcf/{email}.vcf','w') as j:
           j.write(imp_vcard)
   logger.info("Done generating vCards")  
+     
        
   
 def implement_qrcode(first_name,last_name,job,email,ph_no,size,address):
@@ -91,6 +158,7 @@ REV:20150922T195243Z
 END:VCARD""")
    return reqs.content
        
+
        
 def generate_qrcode(data,size,address):
   if not os.path.exists('worker_vcf'):
@@ -114,6 +182,7 @@ def main():
   
   details = details_from_csv(args.ipfile)
   data = data_from_details(details,args.number)
+  adding_data_to_database(data)
   generate_vcf(data,args.address)
   if args.qrcode:
      generate_qrcode(data,args.sizeqr,args.address)
