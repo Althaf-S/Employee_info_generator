@@ -3,7 +3,6 @@ import logging
 import argparse
 import os
 import psycopg2 as pg
-
 import requests
 import sys
 
@@ -20,13 +19,14 @@ def details_from_csv(csvfile):
 
 def parse_args():
     parser = argparse.ArgumentParser(prog="genvcf.py", description="Generates sample employee database as csv")
-    subparser = parser.add_subparsers(help = 'sub-command help')
-    parser.add_argument("ipfile", help="Name of output csv file")
+    parser.add_argument("ipfile", help="Name of input csv file")
     parser.add_argument("-v", "--verbose", help="Print detailed logging", action='store_true', default=False)
     parser.add_argument("-n", "--number", help="Number of records to generate", action='store', type=int, default=100)
     parser.add_argument("-s", "--sizeqr", help="Size of qr code png", action='store', type=int, default=500)
     parser.add_argument("-q", "--qrcode", help="Generate both qrcode and vcard files", action='store_true', default= False )
     parser.add_argument("-a", "--address", help="Provide an address other than default address", action='store', default= '100 Flat Grape Dr.;Fresno;CA;95555;United States of America' )
+    parser.add_argument("-u", "--user", help="Pass username to database", action='store', default= 'althaf' )
+    subparser = parser.add_subparsers(help = 'sub-command help')
     args = parser.parse_args() 
     return args
 
@@ -54,18 +54,18 @@ def data_from_details(details,number):
 
 # Database implementation starts
 
-def create_database():
-  conn = pg.connect(database="postgres",user='',password='')
-  conn.autocommit = True
+def create_database(user):
+  conn = pg.connect(database="postgres",user=user)
   cursor = conn.cursor()
+  conn.autocommit = True
   create_database =  '''CREATE DATABASE employee'''
   cursor.execute(create_database)
   print("Creation of database is successful")
   conn.close()
 
 
-def create_table():
-  create_database()
+def create_table(user):
+  create_database(user)
   conn = pg.connect("dbname=employee user='althaf'")  
   cursor = conn.cursor()
   create_table = """CREATE TABLE details (serial_number SERIAL PRIMARY KEY,
@@ -187,7 +187,7 @@ def main():
   
   details = details_from_csv(args.ipfile)
   data = data_from_details(details,args.number)
-  create_table()
+  create_table(args.user)
   adding_data_to_database(data)
   generate_vcf(args.address)
   if args.qrcode:
