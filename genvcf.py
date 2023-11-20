@@ -20,6 +20,7 @@ def details_from_csv(csvfile):
 
 def parse_args():
     parser = argparse.ArgumentParser(prog="genvcf.py", description="Generates sample employee database as csv")
+    subparser = parser.add_subparsers(help = 'sub-command help')
     parser.add_argument("ipfile", help="Name of output csv file")
     parser.add_argument("-v", "--verbose", help="Print detailed logging", action='store_true', default=False)
     parser.add_argument("-n", "--number", help="Number of records to generate", action='store', type=int, default=100)
@@ -54,7 +55,7 @@ def data_from_details(details,number):
 # Database implementation starts
 
 def create_database():
-  conn = pg.connect(database="postgres",user='althaf',password='Absara695')
+  conn = pg.connect(database="postgres",user='',password='')
   conn.autocommit = True
   cursor = conn.cursor()
   create_database =  '''CREATE DATABASE employee'''
@@ -186,6 +187,7 @@ def main():
   
   details = details_from_csv(args.ipfile)
   data = data_from_details(details,args.number)
+  create_table()
   adding_data_to_database(data)
   generate_vcf(args.address)
   if args.qrcode:
