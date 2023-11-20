@@ -3,6 +3,7 @@ import logging
 import argparse
 import os
 import psycopg2 as pg
+
 import requests
 import sys
 
@@ -28,6 +29,7 @@ def parse_args():
     args = parser.parse_args() 
     return args
 
+
 def implement_log(log_level):
     global logger
     logger = logging.getLogger("genvcf_log")
@@ -49,7 +51,7 @@ def data_from_details(details,number):
   return data
 
 
-# DAtabase implementation starts
+# Database implementation starts
 
 def create_database():
   conn = pg.connect(database="postgres",user='althaf',password='Absara695')
@@ -130,11 +132,12 @@ END:VCARD
   
 
 
-def generate_vcf(data,address):
+def generate_vcf(address):
   if not os.path.exists('worker_vcf'):
     os.mkdir('worker_vcf')
   count = 1
-  for first_name,last_name,job,email,ph_no in data:
+  details = retriving_data_from_database()
+  for first_name,last_name,job,email,ph_no in details:
        imp_vcard = implement_vcf(first_name,last_name,job,email,ph_no,address)
        logger.debug("Writing row %d", count)
        count +=1
@@ -160,11 +163,12 @@ END:VCARD""")
        
 
        
-def generate_qrcode(data,size,address):
+def generate_qrcode(size,address):
   if not os.path.exists('worker_vcf'):
     os.mkdir('worker_vcf')
   count = 1
-  for first_name,last_name,job,email,ph_no in data:
+  details = retriving_data_from_database()
+  for first_name,last_name,job,email,ph_no in details:
     imp_qrcode = implement_qrcode(first_name,last_name,job,email,ph_no,size,address)
     logger.debug("Writing row %d", count)
     count +=1
@@ -183,9 +187,9 @@ def main():
   details = details_from_csv(args.ipfile)
   data = data_from_details(details,args.number)
   adding_data_to_database(data)
-  generate_vcf(data,args.address)
+  generate_vcf(args.address)
   if args.qrcode:
-     generate_qrcode(data,args.sizeqr,args.address)
+     generate_qrcode(args.sizeqr,args.address)
      
 if __name__ == '__main__':
    main()    
