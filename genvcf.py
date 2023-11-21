@@ -19,14 +19,35 @@ def details_from_csv(csvfile):
 
 def parse_args():
     parser = argparse.ArgumentParser(prog="genvcf.py", description="Generates sample employee database as csv")
-    parser.add_argument("ipfile", help="Name of input csv file")
+    #parser.add_argument("ipfile", help="Name of input csv file")
     parser.add_argument("-v", "--verbose", help="Print detailed logging", action='store_true', default=False)
     parser.add_argument("-n", "--number", help="Number of records to generate", action='store', type=int, default=100)
     parser.add_argument("-s", "--sizeqr", help="Size of qr code png", action='store', type=int, default=500)
     parser.add_argument("-q", "--qrcode", help="Generate both qrcode and vcard files", action='store_true', default= False )
     parser.add_argument("-a", "--address", help="Provide an address other than default address", action='store', default= '100 Flat Grape Dr.;Fresno;CA;95555;United States of America' )
-    parser.add_argument("-u", "--user", help="Pass username to database", action='store', default= 'althaf' )
-    subparser = parser.add_subparsers(help = 'sub-command help')
+    #parser.add_argument("-u", "--user", help="Pass username to database", action='store', default= 'althaf' )
+    subparser = parser.add_subparsers(dest='subcommand',help = 'sub-command help')
+    #initdb subcommand 
+    parser_initdb = subparser.add_parser("initdb",help="Initialize creation of database and username")
+    parser_initdb.add_argument("-u","--user", help="Adding user name of database",action="store",type=str,default='althaf')
+    parser_initdb.add_argument("-d","--dbname", help="Adding database name",action="store",type=str,default='employee')
+    
+    #load subcommand
+    parser_load = subparser.add_parser("load" ,help="Load data to database from csvfile")
+    parser_load.add_argument("-c","--csv",help="Providing name of csv file",action = "store",type=str,default='userdetails.csv')
+    parser_load.add_argument("-u","--user", help="Adding user name of database",action="store",type=str,default='althaf')
+    parser_load.add_argument("-d","--dbname", help="Adding database name",action="store",type=str,default='employee')
+    
+    #retreiving data from database
+    parser_load = subparser.add_parser("rtr" ,help="retrieve data from database")
+    parser_load.add_argument("-u","--user", help="Adding user name of database",action="store",type=str,default='althaf')
+    parser_load.add_argument("-d","--dbname", help="Adding database name",action="store",type=str,default='employee') 
+    parser_load.add_argument("-n", "--number", help="Number of records to generate", action='store', type=int, default=100)
+    parser_load.add_argument("-s", "--sizeqr", help="Size of qr code png", action='store', type=int, default=500)
+    parser_load.add_argument("-q", "--qrcode", help="Generate both qrcode and vcard files", action='store_true', default= False )
+    parser_load.add_argument("-a", "--address", help="Provide an address other than default address", action='store', default= '100 Flat Grape Dr.;Fresno;CA;95555;United States of America' )
+       
+    
     args = parser.parse_args() 
     return args
 
@@ -54,19 +75,19 @@ def data_from_details(details,number):
 
 # Database implementation starts
 
-def create_database(user):
+def create_database(user,dbase):
   conn = pg.connect(database="postgres",user=user)
   cursor = conn.cursor()
   conn.autocommit = True
-  create_database =  '''CREATE DATABASE employee'''
+  create_database =  f"CREATE DATABASE {dbase}"
   cursor.execute(create_database)
   print("Creation of database is successful")
   conn.close()
 
 
-def create_table(user):
-  create_database(user)
-  conn = pg.connect("dbname=employee user='althaf'")  
+def create_table(us,db):
+  create_database(us,db)
+  conn = pg.connect(f"dbname={db} user={us}")  
   cursor = conn.cursor()
   create_table = """CREATE TABLE details (serial_number SERIAL PRIMARY KEY,
                                                     lastname VARCHAR(50),
@@ -79,8 +100,8 @@ def create_table(user):
   conn.commit()
   conn.close()
 
-def truncate_table():
-  conn = pg.connect("dbname=employee user='althaf'")
+def truncate_table(user,dbname):
+  conn = pg.connect(f"dbname={dbname} user={user}")
   cursor = conn.cursor()
   truncate_table = "TRUNCATE TABLE details RESTART IDENTITY"
   cursor.execute(truncate_table)
@@ -89,10 +110,9 @@ def truncate_table():
   
   
   
-def adding_data_to_database(data):
-  #data = data_from_details(details,number)
-  truncate_table()
-  conn = pg.connect("dbname=employee user='althaf'")
+def add_data_to_database(data,user,dbname):
+  truncate_table(user,dbname)
+  conn = pg.connect(f"dbname={dbname} user={user}")
   cursor = conn.cursor()
   for last_name,first_name,title,email,ph_no in data:
      insert_info = f"""INSERT INTO details (lastname,firstname,title,email,phone_number) VALUES (%s,%s,%s,%s,%s)"""
@@ -102,9 +122,9 @@ def adding_data_to_database(data):
   conn.close()
      
 
-def retriving_data_from_database():
+def retriving_data_from_database(user,dbname):
   data = []
-  conn = pg.connect("dbname=employee user='althaf'")
+  conn = pg.connect(f"dbname={dbname} user={user}")
   cursor = conn.cursor()
   cursor.execute("SELECT lastname,firstname,title,email,phone_number FROM details")
   conn.commit()
@@ -133,11 +153,10 @@ END:VCARD
   
 
 
-def generate_vcf(address):
+def generate_vcf(details,address):
   if not os.path.exists('worker_vcf'):
     os.mkdir('worker_vcf')
   count = 1
-  details = retriving_data_from_database()
   for first_name,last_name,job,email,ph_no in details:
        imp_vcard = implement_vcf(first_name,last_name,job,email,ph_no,address)
        logger.debug("Writing row %d", count)
@@ -164,11 +183,10 @@ END:VCARD""")
        
 
        
-def generate_qrcode(size,address):
+def generate_qrcode(details,size,address):
   if not os.path.exists('worker_vcf'):
     os.mkdir('worker_vcf')
   count = 1
-  details = retriving_data_from_database()
   for first_name,last_name,job,email,ph_no in details:
     imp_qrcode = implement_qrcode(first_name,last_name,job,email,ph_no,size,address)
     logger.debug("Writing row %d", count)
@@ -184,14 +202,17 @@ def main():
      implement_log(logging.DEBUG)
   else:
      implement_log(logging.INFO)
-  
-  details = details_from_csv(args.ipfile)
-  data = data_from_details(details,args.number)
-  create_table(args.user)
-  adding_data_to_database(data)
-  generate_vcf(args.address)
-  if args.qrcode:
-     generate_qrcode(args.sizeqr,args.address)
+  if args.subcommand == "initdb":
+    create_table(args.user,args.dbname)
+  if args.subcommand == "load":
+    details = details_from_csv(args.csv)
+    data = data_from_details(details,args.number)
+    add_data_to_database(data,args.user,args.dbname)
+  if args.subcommand == "rtr":
+     details = retriving_data_from_database(args.user,args.dbname)
+     generate_vcf(details,args.address)
+     if args.qrcode:
+       generate_qrcode(details,args.sizeqr,args.address)
      
 if __name__ == '__main__':
    main()    
