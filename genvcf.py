@@ -22,9 +22,6 @@ def parse_args():
     #parser.add_argument("ipfile", help="Name of input csv file")
     parser.add_argument("-v", "--verbose", help="Print detailed logging", action='store_true', default=False)
     parser.add_argument("-n", "--number", help="Number of records to generate", action='store', type=int, default=100)
-    parser.add_argument("-s", "--sizeqr", help="Size of qr code png", action='store', type=int, default=500)
-    parser.add_argument("-q", "--qrcode", help="Generate both qrcode and vcard files", action='store_true', default= False )
-    parser.add_argument("-a", "--address", help="Provide an address other than default address", action='store', default= '100 Flat Grape Dr.;Fresno;CA;95555;United States of America' )
     #parser.add_argument("-u", "--user", help="Pass username to database", action='store', default= 'althaf' )
     subparser = parser.add_subparsers(dest='subcommand',help = 'sub-command help')
     #initdb subcommand 
@@ -37,6 +34,7 @@ def parse_args():
     parser_load.add_argument("-c","--csv",help="Providing name of csv file",action = "store",type=str,default='userdetails.csv')
     parser_load.add_argument("-u","--user", help="Adding user name of database",action="store",type=str,default='althaf')
     parser_load.add_argument("-d","--dbname", help="Adding database name",action="store",type=str,default='employee')
+    parser_load.add_argument("-n", "--number", help="Number of records to generate", action='store', type=int, default=100)
     
     #retreiving data from database
     parser_load = subparser.add_parser("rtr" ,help="retrieve data from database")
@@ -46,6 +44,12 @@ def parse_args():
     parser_load.add_argument("-s", "--sizeqr", help="Size of qr code png", action='store', type=int, default=500)
     parser_load.add_argument("-q", "--qrcode", help="Generate both qrcode and vcard files", action='store_true', default= False )
     parser_load.add_argument("-a", "--address", help="Provide an address other than default address", action='store', default= '100 Flat Grape Dr.;Fresno;CA;95555;United States of America' )
+    
+    #create new table
+    parser_tb = subparser.add_parser("createtb",help="Create a new table")
+    parser_tb.add_argument("-u","--user", help="Adding user name of database",action="store",type=str,default='althaf')
+    parser_tb.add_argument("-d","--dbname", help="Adding database name",action="store",type=str,default='employee')
+    #parser_tb.add_argument("-t","--tbname", help="Adding table name",action="store",type=str,default='employee')
        
     
     args = parser.parse_args() 
@@ -103,11 +107,33 @@ def create_table(us,db):
 def truncate_table(user,dbname):
   conn = pg.connect(f"dbname={dbname} user={user}")
   cursor = conn.cursor()
-  truncate_table = "TRUNCATE TABLE details RESTART IDENTITY"
+  truncate_table = "TRUNCATE TABLE details RESTART IDENTITY CASCADE"
   cursor.execute(truncate_table)
   conn.commit()
   conn.close()
   
+
+def truncate_table_leaves(user,dbname):
+  conn = pg.connect(f"dbname={dbname} user={user}")
+  cursor = conn.cursor()
+  truncate_table = "TRUNCATE TABLE leaves RESTART IDENTITY CASCADE"
+  cursor.execute(truncate_table)
+  conn.commit()
+  conn.close()
+
+  
+def create_new_table(user,dbname):
+  #truncate_table_leaves(user,dbname)
+  conn = pg.connect(f"dbname={dbname} user={user}")
+  cursor = conn.cursor()
+  create_table = """CREATE TABLE leaves (serial_number SERIAL PRIMARY KEY,
+                                         date DATE,
+                                         employee_id INTEGER REFERENCES details(serial_number),
+                                         reason VARCHAR(50),UNIQUE (date,employee_id))"""
+  cursor.execute(create_table)
+  print("New table created successfully")
+  conn.commit()
+  conn.close()
   
   
 def add_data_to_database(data,user,dbname):
@@ -122,15 +148,15 @@ def add_data_to_database(data,user,dbname):
   conn.close()
      
 
-def retriving_data_from_database(user,dbname):
+def retriving_data_from_database(user,dbname,num):
   data = []
   conn = pg.connect(f"dbname={dbname} user={user}")
   cursor = conn.cursor()
   cursor.execute("SELECT lastname,firstname,title,email,phone_number FROM details")
   conn.commit()
   x = cursor.fetchall()
-  for i in x:
-    data.append(i)
+  for i in range(0,num):
+    data.append(x[i])
   conn.close()
   return data
   
@@ -209,10 +235,13 @@ def main():
     data = data_from_details(details,args.number)
     add_data_to_database(data,args.user,args.dbname)
   if args.subcommand == "rtr":
-     details = retriving_data_from_database(args.user,args.dbname)
+     details = retriving_data_from_database(args.user,args.dbname,args.number)
      generate_vcf(details,args.address)
      if args.qrcode:
        generate_qrcode(details,args.sizeqr,args.address)
+  if args.subcommand == "createtb":
+     create_new_table(args.user,args.dbname)
+     
      
 if __name__ == '__main__':
    main()    
