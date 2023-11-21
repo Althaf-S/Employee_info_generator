@@ -24,6 +24,7 @@ def parse_args():
     parser.add_argument("-n", "--number", help="Number of records to generate", action='store', type=int, default=100)
     #parser.add_argument("-u", "--user", help="Pass username to database", action='store', default= 'althaf' )
     subparser = parser.add_subparsers(dest='subcommand',help = 'sub-command help')
+    
     #initdb subcommand 
     parser_initdb = subparser.add_parser("initdb",help="Initialize creation of database and username")
     parser_initdb.add_argument("-u","--user", help="Adding user name of database",action="store",type=str,default='althaf')
@@ -50,7 +51,24 @@ def parse_args():
     parser_tb.add_argument("-u","--user", help="Adding user name of database",action="store",type=str,default='althaf')
     parser_tb.add_argument("-d","--dbname", help="Adding database name",action="store",type=str,default='employee')
     #parser_tb.add_argument("-t","--tbname", help="Adding table name",action="store",type=str,default='employee')
-       
+    
+    #retrieve count from new table 
+    parser_ct = subparser.add_parser("rtrct",help="Retrieve count of absents")
+    parser_ct.add_argument("-u","--user", help="Adding user name of database",action="store",type=str,default='althaf')
+    parser_ct.add_argument("-d","--dbname", help="Adding database name",action="store",type=str,default='employee')
+    parser_ct.add_argument("-i","--userid", help="id of the user whose leave data needs to be obtained",action="store",type=int,default=1)
+    
+    #add data to leaves.sql to add data to leaves table
+    parser_file = subparser.add_parser("adddata",help="Adding data to leaves table")
+    parser_file.add_argument("-u","--user", help="Adding user name of database",action="store",type=str,default='althaf')
+    parser_file.add_argument("-d","--dbname", help="Adding database name",action="store",type=str,default='employee')
+    parser_file.add_argument("-f","--filename", help="id of the user whose leave data needs to be obtained",action="store",type=str,default='leaves.sql')   
+    
+    #Truncate table leaves and delete all data from leaves.sql
+    parser_trct = subparser.add_parser("trct",help="Truncate table leaves and delete all data from the sql file from which insertion of data to leaves table is done")
+    parser_trct.add_argument("-u","--user", help="Adding user name of database",action="store",type=str,default='althaf')
+    parser_trct.add_argument("-d","--dbname", help="Adding database name",action="store",type=str,default='employee')
+    parser_trct.add_argument("-f","--filename", help="id of the user whose leave data needs to be obtained",action="store",type=str,default='leaves.sql') 
     
     args = parser.parse_args() 
     return args
@@ -113,7 +131,9 @@ def truncate_table(user,dbname):
   conn.close()
   
 
-def truncate_table_leaves(user,dbname):
+def truncate_table_leaves(user,dbname,filename):
+  with open(f"{filename}",'w+') as f:
+     f.close()
   conn = pg.connect(f"dbname={dbname} user={user}")
   cursor = conn.cursor()
   truncate_table = "TRUNCATE TABLE leaves RESTART IDENTITY CASCADE"
@@ -134,6 +154,33 @@ def create_new_table(user,dbname):
   print("New table created successfully")
   conn.commit()
   conn.close()
+  
+def add_new_data_to_new_table(user,dbname,filename):
+  conn = pg.connect(f"dbname={dbname} user={user}")
+  cursor = conn.cursor()
+  with open(f"{filename}",'r') as f:
+    cursor.execute(f.read())
+    conn.commit()
+  conn.close()
+  f.close()
+  
+  
+def retrive_data_from_new_table(user,dbname,i):
+  conn = pg.connect(f"dbname = {dbname} user={user}")
+  cursor = conn.cursor()
+  rtr_count = f"""SELECT COUNT(lv.employee_id), em.firstname, em.lastname, em.serial_number 
+                  from details em JOIN leaves lv ON em.serial_number= lv.employee_id 
+                  WHERE em.serial_number={i} GROUP BY em.serial_number, em.firstname, lv.employee_id; """
+  cursor.execute(rtr_count)
+  print("Execution successfull")
+  x = cursor.fetchall()
+  for i in x:
+    leaves = i[0]
+  conn.commit()
+  conn.close()
+  max_leaves = 30
+  available_leaves = 30 - leaves
+  print("Available leaves is : ",available_leaves)
   
   
 def add_data_to_database(data,user,dbname):
@@ -241,6 +288,12 @@ def main():
        generate_qrcode(details,args.sizeqr,args.address)
   if args.subcommand == "createtb":
      create_new_table(args.user,args.dbname)
+  if args.subcommand == "rtrct":
+     retrive_data_from_new_table(args.user,args.dbname,args.userid)
+  if args.subcommand == "adddata":
+     add_new_data_to_new_table(args.user,args.dbname,args.filename)
+  if args.subcommand == "trct":
+     truncate_table_leaves(args.user,args.dbname,args.filename)
      
      
 if __name__ == '__main__':
