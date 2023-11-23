@@ -266,10 +266,16 @@ Available leaves = {i[0]}"""
 def generate_leave_csv(args):
   conn = pg.connect(dbname=args.dbname)
   cursor = conn.cursor()
-  insert_info = ""
-  cursor.execute(insert_info,(args.designation,args.numoflv))
+  insert_info = "select leaves.employee_id,leaves.date,leaves.reason,details.firstname,details.lastname,details.email from leaves join details on details.serial_number = leaves.employee_id group by leaves.employee_id,leaves.date,leaves.reason,details.firstname,details.lastname,details.email"
+  cursor.execute(insert_info)
+  x = ("employee_id","date","reason","firstname","lastname","email")
+  y = (cursor.fetchall())
+  print(y)
+  with open("lv.csv","w") as f:
+     data = csv.writer(f)
+     for i in y:
+       data.writerow(i)
   conn.commit()
-  print("data inserted")
   conn.close()  
   
   
