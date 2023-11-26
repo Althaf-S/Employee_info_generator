@@ -11,15 +11,6 @@ logger = None
 class HRException(Exception): pass  
 
 
-#def details_from_csv(csvfile):
-#  data = []
-#  with open(csvfile,'r') as f:
-#    reader = csv.reader(f)
-#    for item in reader:
-#      data.append(item)
-#  return data
-  
-
 def parse_args():
     parser = argparse.ArgumentParser(description="HR management tools")
     parser.add_argument("-d","--dbname", help="Create database table", action='store', default='employee')
@@ -34,7 +25,7 @@ def parse_args():
    
     #load subcommand
     parser_load = subparser.add_parser("load" ,help="Load data to database from csvfile")
-    parser_load.add_argument("-c","--csv",help="Providing name of csv file",type=str)
+    parser_load.add_argument("file",help="Providing name of csv file",type=str)
     
     #retreiving data from database and generate vcard for a particular employee
     parser_retrieve = subparser.add_parser("rtr" ,help="retrieve data from database")
@@ -65,10 +56,8 @@ def parse_args():
     
     #Generate details of employees leaves on csv file
     parser_initcsv = subparser.add_parser("rtrcsv",help="Generate details of employees leaves on csv file")
-    
-
-    
-    
+    parser_initcsv.add_argument("-f","--filename",help="Provide file name for generating csv, only file name and no file extention is needed",action='store',default="lv")
+       
     args = parser.parse_args() 
     return args
 
@@ -89,17 +78,6 @@ def logger(is_logger):
 
 
 # Database implementation starts
-
-
-
-#def create_database(user,dbase):
-#  conn = pg.connect(database="postgres",user=user)
-#  cursor = conn.cursor()
-#  conn.autocommit = True
-#  create_database =  f"CREATE DATABASE {dbase}"
-#  cursor.execute(create_database)
-#  print("Creation of database is successful")
-#  conn.close()
 
 
 ## Clarified error and built new function to create table
@@ -133,7 +111,7 @@ def truncate_table(user,dbname):
 def add_data_to_table_details(args):
   conn = pg.connect(dbname=args.dbname)
   cursor = conn.cursor()
-  with open(args.csv,'r') as f:
+  with open(args.file,'r') as f:
     reader = csv.reader(f)
     for last_name,first_name,title,email,ph_no in reader:
       logger.debug("Inserted data of %s",email)
@@ -264,18 +242,51 @@ Available leaves = {i[0]}"""
 
 #Generate details of employees leaves on csv file
 def generate_leave_csv(args):
+  with open(f"{args.filename}.csv","w") as f:
+    data = csv.writer(f)
+    a = "Employee_id","firstname","lastname","email","title","Total number of leaves","Leaves left"
+    data.writerow(a)
+  f.close()
   conn = pg.connect(dbname=args.dbname)
   cursor = conn.cursor()
-  insert_info = "select leaves.employee_id,leaves.date,leaves.reason,details.firstname,details.lastname,details.email from leaves join details on details.serial_number = leaves.employee_id group by leaves.employee_id,leaves.date,leaves.reason,details.firstname,details.lastname,details.email"
-  cursor.execute(insert_info)
-  x = ("employee_id","date","reason","firstname","lastname","email")
-  y = (cursor.fetchall())
-  print(y)
-  with open("lv.csv","w") as f:
-     data = csv.writer(f)
-     for i in y:
-       data.writerow(i)
-  conn.commit()
+  cursor.execute("select count(serial_number) from details")
+  x = cursor.fetchall()
+  for i in x:
+    count = i[0]
+  for i in range (1,count+1):
+    insert_info = f"""select l.employee_id from leaves l join details d on l.employee_id = d.serial_number where d.serial_number={i}"""
+    cursor.execute(insert_info)
+    data = (cursor.fetchall())
+    if data == []:
+      info = f"select d.serial_number,d.firstname,d.lastname,d.email,d.title,g.num_of_leaves from details d join designation g on g.designation = d.title where d.serial_number = {i}"
+      cursor.execute(info)
+      n = cursor.fetchall()
+      for l in n:
+        with open(f"{args.filename}.csv","a") as f:
+          data = csv.writer(f)
+          a = l[0],l[1],l[2],l[3],l[4],l[5],l[5]
+          data.writerow(a)
+        f.close()
+        print(l[0],l[1],l[2],l[3],l[4],"Total no. of leaves :-",l[5],"Leaves left :-",l[5])
+    else:
+      info = f"select d.serial_number,d.firstname,d.lastname,d.email,d.title,g.num_of_leaves from details d join designation g on g.designation = d.title where d.serial_number = {i}"
+      cursor.execute(info)
+      n = cursor.fetchall()
+      for j in n:
+        num_leaves = j[5]
+      leaves = f"select count(l.employee_id),l.employee_id from leaves l where l.employee_id = {i} group by l.employee_id"
+      cursor.execute(leaves)
+      m = cursor.fetchall()
+      for k in m:
+        count = k[0]
+      leaves_left = num_leaves - count
+      with open(f"{args.filename}.csv","a") as f:
+          data = csv.writer(f)
+          a = j[0],j[1],j[2],j[3],j[4],j[5],leaves_left
+          data.writerow(a)
+      f.close()
+      print(j[0],j[1],j[2],j[3],j[4],"Total no. of leaves :-",j[5],"Leaves left :-",leaves_left)
+    conn.commit()
   conn.close()  
   
   
