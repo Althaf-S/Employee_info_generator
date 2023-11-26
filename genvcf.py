@@ -80,7 +80,7 @@ def logger(is_logger):
 # Database implementation starts
 
 
-## Clarified error and built new function to create table
+## Create details,leaves,designation table
 def create_table(args):
   with open("init.sql",'r') as f:
     query = f.read()
@@ -107,7 +107,7 @@ def truncate_table(user,dbname):
   conn.close()
   
   
-## Done editing this part as per the request
+#Insert data into details table from csv 
 def add_data_to_table_details(args):
   conn = pg.connect(dbname=args.dbname)
   cursor = conn.cursor()
@@ -124,7 +124,7 @@ def add_data_to_table_details(args):
  
  
 # fetchone we get details in a tupule fetchall we get details in a tupule which is present inside a list      
-## Designed based on the request 
+#Genereate vcard,qrcode for a single employee and also show vcard info on terminal
 def retriving_data_from_database(args):
   conn = pg.connect(dbname=args.dbname)
   cursor = conn.cursor()
@@ -154,6 +154,7 @@ Phone       : {phone_number}""")
   conn.close()
 
 
+#Generate vcard and qrcode for given number of employees
 def genrate_vcard_file(args):
   if not os.path.exists('worker_vcf'):
     os.mkdir('worker_vcf')
@@ -203,7 +204,7 @@ def add_data_to_designation_table(args):
   conn.close()
 
 
-#retrieve number of leaves remaining for an employee
+#retrieve number of leaves remaining for an employee (single employee)
 def retrive_data_from_new_table(args):
   conn = pg.connect(dbname = args.dbname)
   cursor = conn.cursor()
@@ -212,7 +213,6 @@ def retrive_data_from_new_table(args):
                   join designation g on d.title = g.designation 
                   where d.serial_number={args.employee_id} group by d.serial_number,d.firstname,d.email,g.num_of_leaves,g.designation;"""
   cursor.execute(rtr_count,(args.employee_id,))
-  #print("Execution successfull")
   data = cursor.fetchall()
   if data != []: 
      for i in data:
