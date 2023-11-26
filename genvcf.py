@@ -28,8 +28,8 @@ def parse_args():
     
     #retreiving data from database and generate vcard for a particular employee
     parser_retrieve = subparser.add_parser("rtr" ,help="retrieve data from database")
+    parser_retrieve.add_argument("id", help="ID of the employee whose data needs to be generated",type=str)
     parser_retrieve.add_argument("--vcard", help="Generate vcard details of employee_id to show it on terminal",action="store_true",default = False)
-    parser_retrieve.add_argument("-i", "--id", help="ID of the employee whose data needs to be generated",type=str)
     parser_retrieve.add_argument("--vcf",help="Geenrate vcard file",action="store_true",default=False)
     parser_retrieve.add_argument("--qrcd",help="Generate qrcode file",action="store_true",default=False)
     
@@ -143,6 +143,7 @@ Phone       : {phone_number}""")
     imp_vcard = implement_vcf(lastname,firstname,title,email,phone_number)
     with open(f'worker_vcf/{email}.vcf','w') as j:
        j.write(imp_vcard)
+    logger.info(f"Done generating vcard of {email}")
   if args.qrcd:
      if not os.path.exists('worker_vcf'):
        os.mkdir('worker_vcf')

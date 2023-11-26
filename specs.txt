@@ -1,12 +1,12 @@
 1) OBJECTIVE:
 
-   Generate visiting cards and QRCODE for a list of employees whose the details are provided in a CSV file.
+   Generate vcard and qrcode for a list of employees whose the details are provided in a CSV file.
 
 
 
 2) INPUT:
    
-   2.1) CSV file from which data is extracted needs to be provided as command line argument.
+   2.1) CSV file from which data is extracted needs to be provided as command line argument to load data.
     
    2.2) General format of data provided in CSV file is given below;
            [last_name, first_name, job, email_address, phone_number]
@@ -40,53 +40,83 @@
             EMAIL;PREF;INTERNET:kathy.lopez@warren.org
             REV:20150922T195243Z
             END:VCARD
+            
+   3.4) Output of the data regarding leaves generated on screen example:
+            Name of employee : Anne Smith
+            Email : smithanne@outlook.com
+            Designation : Staff Engineer
+            Maximum alloted leaves : 20
+            Available leaves = 15 
 
 
 
 4. EXECUTION:
-
-   4.1) The program needs to be executed from command line.
-        The CSV file from which the data needs to be extracted should be provided as command line argument.
+   4.1) Database to which the data needs to be added should be created manually (postgres is used for databse manipulations)
    
-   4.2) Format for providing command line argument and running file is 'python3 <program_file_name> <CSV_file_name>' .
+   4.2) The program needs to be executed from command line.
+        The CSV file from which the data needs to be extracted should be provided as command line argument when needed to load
+        the data.
    
-   4.3) Data will be generated on the folder specified in the program and the direcory to store and data will be created 
+   4.3) Format for providing command line argument and running file is 'python3 <program_file_name> <arguments>' .
+   
+   4.4) Data will be generated on the folder specified in the program and the direcory to store and data will be created 
         in the folder which the user use for execution of program.
    
-   4.4) Execution of arguments:
+   4.5) Execution of arguments:
    
-          4.4.1) Log file is where all the data regarding the execution of file is stored which includes the log 
+          4.5.1) Log file is where all the data regarding the execution of file is stored which includes the log 
                  in the format provided here : [DEBUG] 2023-11-15 15:40:56,104 | genvcf.py:37 | Writing row 15 
                  this is an example of debug log information of the vCard generation.
    
-          4.4.2) 
+          4.5.2) 
                   
-                 python3 <program_file_name> <CSV_file_name> -h/--help -> This command provides with help regarding what
+                 python3 <program_file_name> -h/--help -> This command provides with help regarding what
                  this program is used for and information regarding all its other arguments.
                  
-                 python3 <program_file_name> <CSV_file_name> -v/--verbose -> Used to print the debug log data in the terminal
+                 python3 <program_file_name> -v/--verbose -> Used to print the debug log data in the terminal
                  showing the debug log data for all the file generated. Running without -v/--verbos will show you information 
                  regarding whether the files are generated or not.
                  
-                 python3 <program_file_name> <CSV_file_name> -n<number_of_files>/--number<number_of_files> -> Used to generate 
-                 only specified number of vCards/qrcode files.
+                 python3 <program_file_name> -d/--dbname -> By default a database name will be present in parser, if the
+                 user needs to add a new database name use this subparser command to do the same. Or else you can use the
+                 default database.
                  
-                 python3 <program_file_name> <CSV_file_name> -s<size_of_qrcode>/--sizeqr<size_of_qrcode> -> Used to generate
-                 qr code png files with specified dimension. Type '-s300' as command line argument to get 300x300 sized qrcode. 
+                 python3 <program_file_name> inittb -> This command is used to create the database tables that are needed to 
+                 store the data. The query for creation of tables is obtained from a file init.sql
                  
-                 python3 <program_file_name> <CSV_file_name> -q/--qrcode -> to generate qrcode data along with the generation of
-                 vcard data this argument needs to be passed along with the program execution.
+                 python3 <program_file_name> load file -> load command is used to load data to database tables and file command
+                 along with load command is used to add csv file name from which data is loaded to databse.
                  
-                 python3 <program_file_name> <CSV_file_name> -a<address>/--address<address> -> to give an another address other than
-                 the default provided use this argument, an example to pass this argument in command line is as follows
-                 -a"100 Flat Grape Dr.;Fresno;CA;95555;United States of America".
+                 python3 <program_file_name> rtr id --vcard --vcf --qrcd -> rtr is used to retrieve data of a particular employee
+                 and all other subcommands are optional --vcard is used to show the vcard details of user in terminal, id should be used
+                 to get the details of thet particular employee and this id is ther employee-id , --vcf is used to generate vcard for
+                 that particular employee, --qrcd is used to generate qrcode for that employee.
                  
-    
-    
-    
-    
-    
-    
-    
+                 python3 <program_file_name> genvcard -n/--number --qrcd -> genvcard is user to generate vcard for a particular
+                 number of employee, -n/--number is used to generate that much number of employee's vcards, --qrcd is used to generate
+                 qrcode for given number of employees. By default this number is set as 10.
+                 
+                 python3 <program_file_name> initlv date employee_id reason -> initlv is used to insert data to leaves table. 'date' is
+                 the date in which employee was leave. employee_id is the id of employee from details table reason is the cause of leave.
+                 
+                 python3 <program_file_name> initds -> This command is used to add data to designation table and done by calling a file
+                 called designation.sql where the query to input data is loaded.
+                 
+                 python3 <program_file_name> rtrlv employee_id -> Command is used to retrieve leaves data regarding an employee by providing
+                 employee_id after typing rtrlv, the data will be shown on terminal.
+                 
+                 python3 <program_file_name> rtrcsv -f -> rtrcsv command is to get details of leaves of each employee on a csv file and -f
+                 is a subcommand that can be used to provide csv filename without the file extention bydefault a filename is set 'lv.csv'.
+                 
+                 
+                 
+                 
+                 
+                 
+                 
+                 
+                 
+                 
+            
     
 
