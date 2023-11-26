@@ -18,8 +18,7 @@ def parse_args():
     #parser.add_argument("-n", "--number", help="Number of records to generate", action='store', type=int, default=100)
     subparser = parser.add_subparsers(dest='subcommand',help = 'sub-command help')
   
-    
-    #inittb subcommand # Done adding the changes
+    #inittb subcommand 
     parser_initdb = subparser.add_parser("inittb",help="Initialization of table in the database")
     
    
@@ -47,8 +46,8 @@ def parse_args():
     
     #Insert data into designation table
     parser_initds = subparser.add_parser("initds",help="Input data into leaves table")
-    parser_initds.add_argument("designation", help="designation of employees")
-    parser_initds.add_argument("numoflv",help="number of leaves alloted to each designation")
+    #parser_initds.add_argument("designation", help="designation of employees")
+    #parser_initds.add_argument("numoflv",help="number of leaves alloted to each designation")
     
     #retrieve leave data from leaves table and designation table
     parser_initrtrlv = subparser.add_parser("rtrlv",help="Input data into leaves table")
@@ -195,12 +194,13 @@ def add_data_to_leaves_table(args):
 
 #Insert data into designation table
 def add_data_to_designation_table(args):
-  conn = pg.connect(dbname=args.dbname)
+  with open("designation.sql",'r') as f:
+    query = f.read()
+  conn = pg.connect(dbname=args.dbname)  
   cursor = conn.cursor()
-  insert_info = "INSERT INTO designation (designation,num_of_leaves) VALUES (%s,%s)"
-  cursor.execute(insert_info,(args.designation,args.numoflv))
+  cursor.execute(query)
   conn.commit()
-  print("data inserted")
+  f.close()
   conn.close()
 
 
@@ -224,6 +224,7 @@ Email : {i[3]}
 Designation : {i[4]}
 Maximum alloted leaves : {i[5]}
 Available leaves = {available_leaves}"""
+       print(d)
        conn.commit()
   if data == []:
      cursor.execute(f"""select d.num_of_leaves as number,t.firstname,t.lastname , t.email, d.designation from designation d 
@@ -235,7 +236,7 @@ Email : {i[3]}
 Designation : {i[4]}
 Maximum alloted leaves : {i[0]}
 Available leaves = {i[0]}"""
-     
+     print(d) 
      conn.commit()
   conn.close()
 
