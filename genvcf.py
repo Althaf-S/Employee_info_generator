@@ -99,7 +99,7 @@ def create_table(args):
 #Details table alteration starts
 
 def truncate_table(user,dbname):
-  conn = pg.connect(f"dbname={dbname} user={user}")
+  conn = pg.connect(dbname=args.dbname)
   cursor = conn.cursor()
   truncate_table = "TRUNCATE TABLE details RESTART IDENTITY CASCADE"
   cursor.execute(truncate_table)
@@ -214,8 +214,8 @@ def retrive_data_from_new_table(args):
   rtr_count = f"""select count (d.serial_number) as count, d.firstname, d.lastname , d.email, g.designation , g.num_of_leaves 
                   from details d join leaves l on d.serial_number = l.employee_id 
                   join designation g on d.title = g.designation 
-                  where d.serial_number={args.employee_id} group by d.serial_number,d.firstname,d.email,g.num_of_leaves,g.designation;"""
-  cursor.execute(rtr_count,(args.employee_id,))
+                  where d.serial_number= %s group by d.serial_number,d.firstname,d.email,g.num_of_leaves,g.designation;"""
+  cursor.execute(rtr_count, (args.employee_id,))
   data = cursor.fetchall()
   if data != []: 
      for i in data:
@@ -230,8 +230,8 @@ Available leaves = {available_leaves}"""
        print(d)
        conn.commit()
   if data == []:
-     cursor.execute(f"""select d.num_of_leaves as number,t.firstname,t.lastname , t.email, d.designation from designation d 
-                      join details t on d.designation=t.title where t.serial_number = {args.employee_id};""")
+     cursor.execute("""select d.num_of_leaves as number,t.firstname,t.lastname , t.email, d.designation from designation d 
+                      join details t on d.designation=t.title where t.serial_number = %s;""", (args.employee_id,))
      leaves = cursor.fetchall()
      for i in leaves:
        d = f"""Name of employee : {i[1]} {i[2]}
@@ -258,12 +258,12 @@ def generate_leave_csv(args):
   for i in x:
     count = i[0]
   for i in range (1,count+1):
-    insert_info = f"""select l.employee_id from leaves l join details d on l.employee_id = d.serial_number where d.serial_number={i}"""
-    cursor.execute(insert_info)
+    insert_info = """select l.employee_id from leaves l join details d on l.employee_id = d.serial_number where d.serial_number= %s"""
+    cursor.execute(insert_info, (i,))
     data = (cursor.fetchall())
     if data == []:
-      info = f"select d.serial_number,d.firstname,d.lastname,d.email,d.title,g.num_of_leaves from details d join designation g on g.designation = d.title where d.serial_number = {i}"
-      cursor.execute(info)
+      info = f"select d.serial_number,d.firstname,d.lastname,d.email,d.title,g.num_of_leaves from details d join designation g on g.designation = d.title where d.serial_number = %s"
+      cursor.execute(info, (i,))
       n = cursor.fetchall()
       for l in n:
         with open(f"{args.filename}.csv","a") as f:
@@ -271,15 +271,15 @@ def generate_leave_csv(args):
           a = l[0],l[1],l[2],l[3],l[4],l[5],l[5]
           data.writerow(a)
         f.close()
-        print(l[0],l[1],l[2],l[3],l[4],"Total no. of leaves :-",l[5],"Leaves left :-",l[5])
+        #print(l[0],l[1],l[2],l[3],l[4],"Total no. of leaves :-",l[5],"Leaves left :-",l[5])
     else:
-      info = f"select d.serial_number,d.firstname,d.lastname,d.email,d.title,g.num_of_leaves from details d join designation g on g.designation = d.title where d.serial_number = {i}"
-      cursor.execute(info)
+      info = "select d.serial_number,d.firstname,d.lastname,d.email,d.title,g.num_of_leaves from details d join designation g on g.designation = d.title where d.serial_number = %s"
+      cursor.execute(info, (i,))
       n = cursor.fetchall()
       for j in n:
         num_leaves = j[5]
-      leaves = f"select count(l.employee_id),l.employee_id from leaves l where l.employee_id = {i} group by l.employee_id"
-      cursor.execute(leaves)
+      leaves = "select count(l.employee_id),l.employee_id from leaves l where l.employee_id = %s group by l.employee_id"
+      cursor.execute(leaves, (i,))
       m = cursor.fetchall()
       for k in m:
         count = k[0]
@@ -289,7 +289,7 @@ def generate_leave_csv(args):
           a = j[0],j[1],j[2],j[3],j[4],j[5],leaves_left
           data.writerow(a)
       f.close()
-      print(j[0],j[1],j[2],j[3],j[4],"Total no. of leaves :-",j[5],"Leaves left :-",leaves_left)
+      #print(j[0],j[1],j[2],j[3],j[4],"Total no. of leaves :-",j[5],"Leaves left :-",leaves_left)
     conn.commit()
   logger.info("CSV file consisting of employee's leave data is generated")
   conn.close()  
