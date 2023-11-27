@@ -79,7 +79,7 @@ def logger(is_logger):
 # Database implementation starts
 
 
-## Create details,leaves,designation table
+#Create details,leaves,designation table and add data to designation table
 def create_table(args):
   with open("init.sql",'r') as f:
     query = f.read()
@@ -98,14 +98,7 @@ def create_table(args):
 
 #Details table alteration starts
 
-#def truncate_table(user,dbname):
-#  conn = pg.connect(dbname=args.dbname)
-#  cursor = conn.cursor()
-#  truncate_table = "TRUNCATE TABLE details RESTART IDENTITY CASCADE"
-#  cursor.execute(truncate_table)
-#  conn.commit()
-#  conn.close()
-  
+
   
 #Insert data into details table from csv 
 def add_data_to_table_details(args):
@@ -199,20 +192,8 @@ def add_data_to_leaves_table(args):
   conn.commit()
   logger.info("data inserted to leaves table")
   conn.close()
-
-
-#Insert data into designation table
-#def add_data_to_designation_table(args):
-#  with open("designation.sql",'r') as f:
-#    query = f.read()
-#  conn = pg.connect(dbname=args.dbname)  
-#  cursor = conn.cursor()
-#  cursor.execute(query)
-#  conn.commit()
-#  f.close()
-#  logger.info("Data inserted into designation table")
-#  conn.close()
-
+  
+  
 
 #retrieve number of leaves remaining for an employee (single employee)
 def retrive_data_from_new_table(args):
@@ -373,3 +354,5 @@ if __name__ == '__main__':
    main()    
    
    
+   
+
