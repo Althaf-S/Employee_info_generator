@@ -265,10 +265,10 @@ def generate_leave_csv(args):
       info = f"select d.serial_number,d.firstname,d.lastname,d.email,d.title,g.num_of_leaves from details d join designation g on g.designation = d.title where d.serial_number = %s"
       cursor.execute(info, (i,))
       n = cursor.fetchall()
-      for l in n:
+      for serial_number,firstname,lastname,email,title,num_of_leaves in n:
         with open(f"{args.filename}.csv","a") as f:
           data = csv.writer(f)
-          a = l[0],l[1],l[2],l[3],l[4],l[5],l[5]
+          a = serial_number,firstname,lastname,email,title,num_of_leaves,num_of_leaves
           data.writerow(a)
         f.close()
         #print(l[0],l[1],l[2],l[3],l[4],"Total no. of leaves :-",l[5],"Leaves left :-",l[5])
@@ -276,20 +276,20 @@ def generate_leave_csv(args):
       info = "select d.serial_number,d.firstname,d.lastname,d.email,d.title,g.num_of_leaves from details d join designation g on g.designation = d.title where d.serial_number = %s"
       cursor.execute(info, (i,))
       n = cursor.fetchall()
-      for j in n:
-        num_leaves = j[5]
+      for serial_number,firstname,lastname,email,title,num_of_leaves in n:
+        num_leaves = num_of_leaves
       leaves = "select count(l.employee_id),l.employee_id from leaves l where l.employee_id = %s group by l.employee_id"
       cursor.execute(leaves, (i,))
       m = cursor.fetchall()
-      for k in m:
-        count = k[0]
+      for count_employee_id,employee_id in m:
+        count = count_employee_id
       leaves_left = num_leaves - count
       with open(f"{args.filename}.csv","a") as f:
           data = csv.writer(f)
-          a = j[0],j[1],j[2],j[3],j[4],j[5],leaves_left
+          a = serial_number,firstname,lastname,email,title,num_of_leaves,leaves_left
           data.writerow(a)
       f.close()
-      #print(j[0],j[1],j[2],j[3],j[4],"Total no. of leaves :-",j[5],"Leaves left :-",leaves_left)
+      #kprint(j[0],j[1],j[2],j[3],j[4],"Total no. of leaves :-",j[5],"Leaves left :-",leaves_left)
     conn.commit()
   logger.info("CSV file consisting of employee's leave data is generated")
   conn.close()  
