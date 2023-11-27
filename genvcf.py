@@ -50,7 +50,7 @@ def parse_args():
     #parser_initds.add_argument("numoflv",help="number of leaves alloted to each designation")
     
     #retrieve leave data from leaves table and designation table
-    parser_initrtrlv = subparser.add_parser("rtrlv",help="Input data into leaves table")
+    parser_initrtrlv = subparser.add_parser("rtrlv",help="Obtain data regarding leaves of employee")
     parser_initrtrlv.add_argument("employee_id", help="employee id of whome the leave data needs to be retrieved")
     
     #Generate details of employees leaves on csv file
@@ -128,31 +128,34 @@ def add_data_to_table_details(args):
 def retriving_data_from_database(args):
   conn = pg.connect(dbname=args.dbname)
   cursor = conn.cursor()
-  query = "SELECT lastname,firstname,title,email,phone_number FROM details where serial_number = %s"
-  cursor.execute(query,(args.id,))
-  conn.commit()
-  lastname,firstname,title,email,phone_number = cursor.fetchone()
-  print(f"""Name        : {firstname} {lastname}
+  try:
+    query = "SELECT lastname,firstname,title,email,phone_number FROM details where serial_number = %s"
+    cursor.execute(query,(args.id,))
+    conn.commit()
+    lastname,firstname,title,email,phone_number = cursor.fetchone()
+    print(f"""Name        : {firstname} {lastname}
 Designation : {title}
 Email       : {email}
 Phone       : {phone_number}""")
-  if args.vcard:
-     print("\n",implement_vcf(lastname,firstname,title,email,phone_number))
-  if args.vcf:
-    if not os.path.exists('worker_vcf'):
-      os.mkdir('worker_vcf') 
-    imp_vcard = implement_vcf(lastname,firstname,title,email,phone_number)
-    with open(f'worker_vcf/{email}.vcf','w') as j:
-       j.write(imp_vcard)
-    logger.info(f"Done generating vcard of {email}")
-  if args.qrcd:
-     if not os.path.exists('worker_vcf'):
-       os.mkdir('worker_vcf')
-     imp_qrcode = implement_qrcode(lastname,firstname,title,email,phone_number)
-     with open(f'worker_vcf/{email}.qr.png','wb') as f:
-        f.write(imp_qrcode)
-     logger.info(f"Done generating qrcode of {email}")
-  conn.close()
+    if args.vcard:
+       print("\n",implement_vcf(lastname,firstname,title,email,phone_number))
+    if args.vcf:
+      if not os.path.exists('worker_vcf'):
+        os.mkdir('worker_vcf') 
+      imp_vcard = implement_vcf(lastname,firstname,title,email,phone_number)
+      with open(f'worker_vcf/{email}.vcf','w') as j:
+         j.write(imp_vcard)
+      logger.info(f"Done generating vcard of {email}")
+    if args.qrcd:
+       if not os.path.exists('worker_vcf'):
+         os.mkdir('worker_vcf')
+       imp_qrcode = implement_qrcode(lastname,firstname,title,email,phone_number)
+       with open(f'worker_vcf/{email}.qr.png','wb') as f:
+          f.write(imp_qrcode)
+       logger.info(f"Done generating qrcode of {email}")
+    conn.close()
+  except TypeError as e:
+    raise HRException ("employee_id not found")
 
 
 #Generate vcard and qrcode for given number of employees
@@ -211,44 +214,46 @@ def add_data_to_designation_table(args):
 def retrive_data_from_new_table(args):
   conn = pg.connect(dbname = args.dbname)
   cursor = conn.cursor()
-  rtr_count = f"""select count (d.serial_number) as count, d.firstname, d.lastname , d.email, g.designation , g.num_of_leaves 
-                  from details d join leaves l on d.serial_number = l.employee_id 
-                  join designation g on d.title = g.designation 
-                  where d.serial_number= %s group by d.serial_number,d.firstname,d.email,g.num_of_leaves,g.designation;"""
-  cursor.execute(rtr_count, (args.employee_id,))
-  data = cursor.fetchall()
-  if data != []: 
-     for count_serial_number,firstname,lastname,email,designation,num_of_leaves in data:
-       leaves = count_serial_number
-       max_leaves = num_of_leaves
-       leaves = max_leaves - leaves
-       if leaves <= 0:
-         available_leaves = 0
-       else:
-         available_leaves = leaves
-       d = f"""Name of employee : {firstname} {lastname}
+  try:
+    rtr_count = f"""select count (d.serial_number) as count, d.firstname, d.lastname , d.email, g.designation , g.num_of_leaves 
+                    from details d join leaves l on d.serial_number = l.employee_id 
+                    join designation g on d.title = g.designation 
+                    where d.serial_number= %s group by d.serial_number,d.firstname,d.email,g.num_of_leaves,g.designation;"""
+    cursor.execute(rtr_count, (args.employee_id,))
+    data = cursor.fetchall()
+    if data != []: 
+       for count_serial_number,firstname,lastname,email,designation,num_of_leaves in data:
+         leaves = count_serial_number
+         max_leaves = num_of_leaves
+         leaves = max_leaves - leaves
+         if leaves <= 0:
+           available_leaves = 0
+         else:
+           available_leaves = leaves
+         d = f"""Name of employee : {firstname} {lastname}
 Email : {email}
 Designation : {designation}
 Maximum alloted leaves : {num_of_leaves}
 Available leaves : {available_leaves}
 Total leaves taken : {count_serial_number}"""
-       print(d)
-       conn.commit()
-  if data == []:
-     cursor.execute("""select d.num_of_leaves as number,t.firstname,t.lastname , t.email, d.designation from designation d 
-                      join details t on d.designation=t.title where t.serial_number = %s;""", (args.employee_id,))
-     leaves = cursor.fetchall()
-     for num_of_leaves,firstname,lastname,email,designation in leaves:
-       d = f"""Name of employee : {firstname} {lastname}
+         print(d)
+         conn.commit()
+    if data == []:
+       cursor.execute("""select d.num_of_leaves as number,t.firstname,t.lastname , t.email, d.designation from designation d 
+                        join details t on d.designation=t.title where t.serial_number = %s;""", (args.employee_id,))
+       leaves = cursor.fetchall()
+       for num_of_leaves,firstname,lastname,email,designation in leaves:
+         d = f"""Name of employee : {firstname} {lastname}
 Email : {email}
 Designation : {designation}
 Maximum alloted leaves : {num_of_leaves}
 Available leaves : {num_of_leaves}
 Total leaves taken : 0"""
-     print(d) 
-     conn.commit()
-  conn.close()
-
+       print(d) 
+       conn.commit()
+    conn.close()
+  except UnboundLocalError as e:
+    raise HRException ("provided employee id is not in tables")
 
 #Generate details of employees leaves on csv file
 def generate_leave_csv(args):
