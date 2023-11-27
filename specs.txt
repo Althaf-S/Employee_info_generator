@@ -81,10 +81,11 @@
                  user needs to add a new database name use this subparser command to do the same. Or else you can use the
                  default database.
                  
-                 python3 <program_file_name> inittb -> This command is used to create the database tables that are needed to 
-                 store the data. The query for creation of tables is obtained from a file init.sql
+                 python3 <program_file_name> initdb -> This command is used to create the database tables that are needed to 
+                 store the data. The query for creation of tables is obtained from a file init.sql. Also data for designation
+                 table is inserted through this command.
                  
-                 python3 <program_file_name> load file -> load command is used to load data to database tables and file command
+                 python3 <program_file_name> import file -> load command is used to load data to database tables and file command
                  along with load command is used to add csv file name from which data is loaded to databse.
                  
                  python3 <program_file_name> rtr id --vcard --vcf --qrcd -> rtr is used to retrieve data of a particular employee
@@ -99,8 +100,6 @@
                  python3 <program_file_name> initlv date employee_id reason -> initlv is used to insert data to leaves table. 'date' is
                  the date in which employee was leave. employee_id is the id of employee from details table reason is the cause of leave.
                  
-                 python3 <program_file_name> initds -> This command is used to add data to designation table and done by calling a file
-                 called designation.sql where the query to input data is loaded.
                  
                  python3 <program_file_name> rtrlv employee_id -> Command is used to retrieve leaves data regarding an employee by providing
                  employee_id after typing rtrlv, the data will be shown on terminal.
@@ -110,13 +109,3 @@
                  
                  
                  
-                 
-                 
-                 
-                 
-                 
-                 
-                 
-            
-    
-
