@@ -218,27 +218,33 @@ def retrive_data_from_new_table(args):
   cursor.execute(rtr_count, (args.employee_id,))
   data = cursor.fetchall()
   if data != []: 
-     for i in data:
-       leaves = i[0]
-       max_leaves = i[5]
-       available_leaves = max_leaves - leaves
-       d = f"""Name of employee : {i[1]} {i[2]}
-Email : {i[3]}
-Designation : {i[4]}
-Maximum alloted leaves : {i[5]}
-Available leaves = {available_leaves}"""
+     for count_serial_number,firstname,lastname,email,designation,num_of_leaves in data:
+       leaves = count_serial_number
+       max_leaves = num_of_leaves
+       leaves = max_leaves - leaves
+       if leaves <= 0:
+         available_leaves = 0
+       else:
+         available_leaves = leaves
+       d = f"""Name of employee : {firstname} {lastname}
+Email : {email}
+Designation : {designation}
+Maximum alloted leaves : {num_of_leaves}
+Available leaves : {available_leaves}
+Total leaves taken : {count_serial_number}"""
        print(d)
        conn.commit()
   if data == []:
      cursor.execute("""select d.num_of_leaves as number,t.firstname,t.lastname , t.email, d.designation from designation d 
                       join details t on d.designation=t.title where t.serial_number = %s;""", (args.employee_id,))
      leaves = cursor.fetchall()
-     for i in leaves:
-       d = f"""Name of employee : {i[1]} {i[2]}
-Email : {i[3]}
-Designation : {i[4]}
-Maximum alloted leaves : {i[0]}
-Available leaves = {i[0]}"""
+     for num_of_leaves,firstname,lastname,email,designation in leaves:
+       d = f"""Name of employee : {firstname} {lastname}
+Email : {email}
+Designation : {designation}
+Maximum alloted leaves : {num_of_leaves}
+Available leaves : {num_of_leaves}
+Total leaves taken : 0"""
      print(d) 
      conn.commit()
   conn.close()
@@ -283,7 +289,11 @@ def generate_leave_csv(args):
       m = cursor.fetchall()
       for count_employee_id,employee_id in m:
         count = count_employee_id
-      leaves_left = num_leaves - count
+      leaves = num_leaves - count
+      if leaves <= 0:
+        leaves_left = 0
+      else:
+        leaves_left = leaves
       with open(f"{args.filename}.csv","a") as f:
           data = csv.writer(f)
           a = serial_number,firstname,lastname,email,title,num_of_leaves,leaves_left
