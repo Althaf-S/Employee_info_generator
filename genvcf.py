@@ -89,6 +89,7 @@ def create_table(args):
     cursor = conn.cursor()
     cursor.execute(query)
     conn.commit()
+    print("Tables created")
     conn.close()
   except pg.OperationalError as e:
     raise HRException(f'database "{args.dbname}" not found')
@@ -202,6 +203,7 @@ def add_data_to_designation_table(args):
   cursor.execute(query)
   conn.commit()
   f.close()
+  print("Data inserted into designation table")
   conn.close()
 
 
@@ -289,6 +291,7 @@ def generate_leave_csv(args):
       f.close()
       print(j[0],j[1],j[2],j[3],j[4],"Total no. of leaves :-",j[5],"Leaves left :-",leaves_left)
     conn.commit()
+  print("CSV file consisting of employee's leave data is generated")
   conn.close()  
   
   
