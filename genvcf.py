@@ -45,7 +45,7 @@ def parse_args():
     parser_initlv.add_argument("reason",help="Reason for leave")
     
     #Insert data into designation table
-    parser_initds = subparser.add_parser("initds",help="Input data into leaves table")
+    #parser_initds = subparser.add_parser("initds",help="Input data into leaves table")
     #parser_initds.add_argument("designation", help="designation of employees")
     #parser_initds.add_argument("numoflv",help="number of leaves alloted to each designation")
     
@@ -118,7 +118,7 @@ def add_data_to_table_details(args):
       insert_info = "INSERT INTO details (lastname,firstname,title,email,phone_number) VALUES (%s,%s,%s,%s,%s)"
       cursor.execute(insert_info,(last_name,first_name,title,email,ph_no))
     conn.commit()
-  logger.info("data inserted")
+  logger.info("data inserted into details table")
   conn.close()
  
  
@@ -139,12 +139,14 @@ Email       : {email}
 Phone       : {phone_number}""")
     if args.vcard:
        print("\n",implement_vcf(lastname,firstname,title,email,phone_number))
+       logger.debug(lastname,firstname,title,email,phone_number)
     if args.vcf:
       if not os.path.exists('worker_vcf'):
         os.mkdir('worker_vcf') 
       imp_vcard = implement_vcf(lastname,firstname,title,email,phone_number)
       with open(f'worker_vcf/{email}.vcf','w') as j:
          j.write(imp_vcard)
+         logger.debug(f"Done generating vcard for {email}")
       logger.info(f"Done generating vcard of {email}")
     if args.qrcd:
        if not os.path.exists('worker_vcf'):
@@ -152,6 +154,7 @@ Phone       : {phone_number}""")
        imp_qrcode = implement_qrcode(lastname,firstname,title,email,phone_number)
        with open(f'worker_vcf/{email}.qr.png','wb') as f:
           f.write(imp_qrcode)
+          logger.debug(f"Done generating qrcode for {email}")
        logger.info(f"Done generating qrcode of {email}")
     conn.close()
   except TypeError as e:
@@ -179,6 +182,7 @@ def genrate_vcard_file(args):
            j.write(imp_vcard)
         if args.qrcd:
            imp_qrcode = implement_qrcode(lastname,firstname,title,email,phone_number)
+           logger.debug(f"Generating qrcode for {email}")
            with open(f'worker_vcf/{email}.qr.png','wb') as f:
              f.write(imp_qrcode)
     logger.info(f"Done generating qrcode of {email}")
@@ -193,21 +197,21 @@ def add_data_to_leaves_table(args):
   insert_info = """INSERT INTO leaves (date,employee_id,reason) VALUES (%s,%s,%s)"""
   cursor.execute(insert_info,(args.date,args.employee_id,args.reason))
   conn.commit()
-  logger.info("data inserted")
+  logger.info("data inserted to leaves table")
   conn.close()
 
 
 #Insert data into designation table
-def add_data_to_designation_table(args):
-  with open("designation.sql",'r') as f:
-    query = f.read()
-  conn = pg.connect(dbname=args.dbname)  
-  cursor = conn.cursor()
-  cursor.execute(query)
-  conn.commit()
-  f.close()
-  logger.info("Data inserted into designation table")
-  conn.close()
+#def add_data_to_designation_table(args):
+#  with open("designation.sql",'r') as f:
+#    query = f.read()
+#  conn = pg.connect(dbname=args.dbname)  
+#  cursor = conn.cursor()
+#  cursor.execute(query)
+#  conn.commit()
+#  f.close()
+#  logger.info("Data inserted into designation table")
+#  conn.close()
 
 
 #retrieve number of leaves remaining for an employee (single employee)
@@ -356,7 +360,6 @@ def main():
                    "rtr"      : retriving_data_from_database,
                    "genvcard" : genrate_vcard_file,
                    "initlv"   : add_data_to_leaves_table,
-                   "initds"   : add_data_to_designation_table,
                    "rtrlv"    : retrive_data_from_new_table,
                    "rtrcsv"   : generate_leave_csv
                  }
