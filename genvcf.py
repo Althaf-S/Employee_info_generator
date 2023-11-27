@@ -19,11 +19,11 @@ def parse_args():
     subparser = parser.add_subparsers(dest='subcommand',help = 'sub-command help')
   
     #inittb subcommand 
-    parser_initdb = subparser.add_parser("inittb",help="Initialization of table in the database")
+    parser_initdb = subparser.add_parser("initdb",help="Initialization of table in the database")
     
    
     #load subcommand
-    parser_load = subparser.add_parser("load" ,help="Load data to database from csvfile")
+    parser_load = subparser.add_parser("import" ,help="Load data to database from csvfile")
     parser_load.add_argument("file",help="Providing name of csv file",type=str)
     
     #retreiving data from database and generate vcard for a particular employee
@@ -98,13 +98,13 @@ def create_table(args):
 
 #Details table alteration starts
 
-def truncate_table(user,dbname):
-  conn = pg.connect(dbname=args.dbname)
-  cursor = conn.cursor()
-  truncate_table = "TRUNCATE TABLE details RESTART IDENTITY CASCADE"
-  cursor.execute(truncate_table)
-  conn.commit()
-  conn.close()
+#def truncate_table(user,dbname):
+#  conn = pg.connect(dbname=args.dbname)
+#  cursor = conn.cursor()
+#  truncate_table = "TRUNCATE TABLE details RESTART IDENTITY CASCADE"
+#  cursor.execute(truncate_table)
+#  conn.commit()
+#  conn.close()
   
   
 #Insert data into details table from csv 
@@ -346,8 +346,8 @@ def main():
   try:
     args = parse_args()
     logger(args.verbose)
-    operations = { "inittb"   : create_table,
-                   "load"     : add_data_to_table_details,
+    operations = { "initdb"   : create_table,
+                   "import"   : add_data_to_table_details,
                    "rtr"      : retriving_data_from_database,
                    "genvcard" : genrate_vcard_file,
                    "initlv"   : add_data_to_leaves_table,
