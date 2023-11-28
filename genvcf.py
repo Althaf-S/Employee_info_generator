@@ -1,22 +1,34 @@
-import csv
-import logging
 import argparse
+import csv
+import configparser
+import logging
 import os
-import psycopg2 as pg
 import requests
 import sys
+
+import psycopg2 as pg
 
 logger = None
 
 class HRException(Exception): pass  
 
+def database_name(dbname):
+  config = configparser.ConfigParser()
+  config.read('config.ini')
+  config.set('Database','dbname',dbname)
+  with open('config.ini','w') as config_file:
+     config.write(config_file)
 
 def parse_args():
+    
+    config = configparser.ConfigParser()
+    config.read('config.ini')
+    
     parser = argparse.ArgumentParser(description="HR management tools")
-    parser.add_argument("-d","--dbname", help="Create database table", action='store', default='employee')
+    parser.add_argument("-d","--dbname", help="Create database table", action='store',type=str,default=config.get('Database','dbname'))
     parser.add_argument("-v", "--verbose", help="Print detailed logging", action='store_true', default=False)
-    #parser.add_argument("-n", "--number", help="Number of records to generate", action='store', type=int, default=100)
     subparser = parser.add_subparsers(dest='subcommand',help = 'sub-command help')
+  
   
     #inittb subcommand 
     parser_initdb = subparser.add_parser("initdb",help="Initialization of table in the database")
@@ -53,6 +65,8 @@ def parse_args():
     parser_initcsv = subparser.add_parser("rtrcsv",help="Generate details of employees leaves on csv file")
     parser_initcsv.add_argument("-f","--filename",help="Provide file name for generating csv, only file name and no file extention is needed",action='store',default="lv")
        
+    parser_dbin = subparser.add_parser("dbin")
+       
     args = parser.parse_args() 
     return args
 
@@ -77,6 +91,7 @@ def logger(is_logger):
 
 #Create details,leaves,designation table and add data to designation table
 def create_table(args):
+  database_name(args.dbname)
   with open("init.sql",'r') as f:
     query = f.read()
     logger.debug(query)
