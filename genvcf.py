@@ -3,10 +3,10 @@ import csv
 import configparser
 import logging
 import os
-import requests
 import sys
 
 import psycopg2 as pg
+import requests
 
 logger = None
 
@@ -24,7 +24,7 @@ def parse_args():
     config = configparser.ConfigParser()
     config.read('config.ini')
     
-    parser = argparse.ArgumentParser(description="HR management tools")
+    parser = argparse.ArgumentParser(description="Employee management tools")
     parser.add_argument("-d","--dbname", help="Create database table", action='store',type=str,default=config.get('Database','dbname'))
     parser.add_argument("-v", "--verbose", help="Print detailed logging", action='store_true', default=False)
     subparser = parser.add_subparsers(dest='subcommand',help = 'sub-command help')
@@ -52,7 +52,7 @@ def parse_args():
     
     #enter data into leaves table
     parser_initlv = subparser.add_parser("initlv",help="Input data into leaves table")
-    parser_initlv.add_argument("date", help="date of the employee's leave")
+    parser_initlv.add_argument("date", help="date of the employee's leave (Date format is : YYYY-MM-DD)")
     parser_initlv.add_argument("employee_id",help="Employee id from details table")
     parser_initlv.add_argument("reason",help="Reason for leave")
 
@@ -64,8 +64,7 @@ def parse_args():
     #Generate details of employees leaves on csv file
     parser_initcsv = subparser.add_parser("rtrcsv",help="Generate details of employees leaves on csv file")
     parser_initcsv.add_argument("-f","--filename",help="Provide file name for generating csv, only file name and no file extention is needed",action='store',default="lv")
-       
-    parser_dbin = subparser.add_parser("dbin")
+
        
     args = parser.parse_args() 
     return args
@@ -102,8 +101,8 @@ def create_table(args):
     conn.commit()
     logger.info("Done creating tables")
     conn.close()
-  except pg.OperationalError as e:
-    raise HRException(f'database "{args.dbname}" not found')
+  except (pg.errors.DuplicateTable,pg.OperationalError) as e:
+    raise HRException(e)
 
 
 
@@ -200,12 +199,16 @@ def genrate_vcard_file(args):
 def add_data_to_leaves_table(args):
   conn = pg.connect(dbname=args.dbname)
   cursor = conn.cursor()
-  insert_info = """INSERT INTO leaves (date,employee_id,reason) VALUES (%s,%s,%s)"""
-  cursor.execute(insert_info,(args.date,args.employee_id,args.reason))
-  conn.commit()
-  logger.info("data inserted to leaves table")
-  conn.close()
-  
+  try:
+    insert_info = """INSERT INTO leaves (date,employee_id,reason) VALUES (%s,%s,%s)"""
+    cursor.execute(insert_info,(args.date,args.employee_id,args.reason))
+    conn.commit()
+    logger.info("data inserted to leaves table")
+    conn.close()
+  except (pg.errors.ForeignKeyViolation,pg.errors.UniqueViolation) as e:
+      raise HRException (e)
+
+
   
 
 #retrieve number of leaves remaining for an employee (single employee)
@@ -304,7 +307,7 @@ def generate_leave_csv(args):
       f.close()
       #kprint(j[0],j[1],j[2],j[3],j[4],"Total no. of leaves :-",j[5],"Leaves left :-",leaves_left)
     conn.commit()
-  logger.info("CSV file consisting of employee's leave data is generated")
+  logger.info("CSV file {args.filename}.csv consisting of employee's leave data is generated")
   conn.close()  
   
   

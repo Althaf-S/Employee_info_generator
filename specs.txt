@@ -77,9 +77,10 @@
                  showing the debug log data for all the file generated. Running without -v/--verbos will show you information 
                  regarding whether the files are generated or not.
                  
-                 python3 <program_file_name> -d/--dbname -> By default a database name will be present in parser, if the
-                 user needs to add a new database name use this subparser command to do the same. Or else you can use the
-                 default database.
+                 python3 <program_file_name> -d/--dbname -> By default a database name will be present in parser, this default
+                 database name is the name provided on config.ini to change this to another default database name just use
+                 this argument if theuser needs to add a new database name use this subparser command to do the same. Or else 
+                 you can use the default database.
                  
                  python3 <program_file_name> initdb -> This command is used to create the database tables that are needed to 
                  store the data. The query for creation of tables is obtained from a file init.sql. Also data for designation
