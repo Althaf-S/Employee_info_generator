@@ -43,11 +43,7 @@ def parse_args():
     parser_initlv.add_argument("date", help="date of the employee's leave")
     parser_initlv.add_argument("employee_id",help="Employee id from details table")
     parser_initlv.add_argument("reason",help="Reason for leave")
-    
-    #Insert data into designation table
-    #parser_initds = subparser.add_parser("initds",help="Input data into leaves table")
-    #parser_initds.add_argument("designation", help="designation of employees")
-    #parser_initds.add_argument("numoflv",help="number of leaves alloted to each designation")
+
     
     #retrieve leave data from leaves table and designation table
     parser_initrtrlv = subparser.add_parser("rtrlv",help="Obtain data regarding leaves of employee")
@@ -161,27 +157,29 @@ def genrate_vcard_file(args):
   count = 1
   conn = pg.connect(dbname=args.dbname)
   cursor = conn.cursor()
-  query = "SELECT lastname,firstname,title,email,phone_number FROM details"
-  cursor.execute(query)
-  data = cursor.fetchall()
-  details = []
-  for i in range(0,args.number):
-    details.append(data[i])
-    for lastname,firstname,title,email,phone_number in details:
-        imp_vcard = implement_vcf(lastname,firstname,title,email,phone_number)
-        logger.debug("Writing row %d", count)
-        count +=1
-        with open(f'worker_vcf/{email}.vcf','w') as j:
-           j.write(imp_vcard)
-        if args.qrcd:
-           imp_qrcode = implement_qrcode(lastname,firstname,title,email,phone_number)
-           logger.debug(f"Generating qrcode for {email}")
-           with open(f'worker_vcf/{email}.qr.png','wb') as f:
-             f.write(imp_qrcode)
-    logger.info(f"Done generating qrcode of {email}")
-  logger.info("Done generating vCards") 
-  conn.close() 
-
+  try:
+    query = "SELECT lastname,firstname,title,email,phone_number FROM details"
+    cursor.execute(query)
+    data = cursor.fetchall()
+    details = []
+    for i in range(0,args.number):
+      details.append(data[i])
+      for lastname,firstname,title,email,phone_number in details:
+          imp_vcard = implement_vcf(lastname,firstname,title,email,phone_number)
+          logger.debug("Writing row %d", count)
+          count +=1
+          with open(f'worker_vcf/{email}.vcf','w') as j:
+             j.write(imp_vcard)
+          if args.qrcd:
+             imp_qrcode = implement_qrcode(lastname,firstname,title,email,phone_number)
+             logger.debug(f"Generating qrcode for {email}")
+             with open(f'worker_vcf/{email}.qr.png','wb') as f:
+               f.write(imp_qrcode)
+      logger.info(f"Done generating qrcode of {email}")
+    logger.info("Done generating vCards") 
+    conn.close() 
+  except IndexError as e:
+    raise HRException ("number of employee out of boundary")
 
 #Insert data into table leaves
 def add_data_to_leaves_table(args):
