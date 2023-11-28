@@ -190,7 +190,7 @@ def genrate_vcard_file(args):
              with open(f'worker_vcf/{email}.qr.png','wb') as f:
                f.write(imp_qrcode)
       logger.info(f"Done generating qrcode of {email}")
-    logger.info("Done generating vCards") 
+    logger.info(f"Done generating vCards for {args.number} employees") 
     conn.close() 
   except IndexError as e:
     raise HRException ("number of employee out of boundary")
@@ -307,7 +307,7 @@ def generate_leave_csv(args):
       f.close()
       #kprint(j[0],j[1],j[2],j[3],j[4],"Total no. of leaves :-",j[5],"Leaves left :-",leaves_left)
     conn.commit()
-  logger.info("CSV file {args.filename}.csv consisting of employee's leave data is generated")
+  logger.info(f"CSV file {args.filename}.csv consisting of employee's leave data is generated")
   conn.close()  
   
   
