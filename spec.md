@@ -41,4 +41,12 @@ Generate vcard qrcode and employee leave data for a list of employees whose deta
             Maximum alloted leaves : 20
             Available leaves = 15 
             
+#EXECUTION
 
+- Database to which the data needs to be added should be created manually (postgres is used for databse manipulations).
+
+- The program needs to be executed from command line. The CSV file from which the data needs to be extracted should be provided as command line argument when needed to load the data.
+
+- Format for providing command line argument and running file is 'python3 <program_file_name> <arguments>'.
+
+- Data will be generated on the folder specified in the program and the direcory to store and data will be created in the folder which the user use for execution of program.
