@@ -4,3 +4,9 @@ __pycache__
 .coverage
 example0
 gensheet.py
+designation.sql
+leaves
+leaves.sql
+level.csv
+partition.py
+run.log

@@ -39,7 +39,7 @@ def parse_args():
     parser_load.add_argument("file",help="Providing name of csv file",type=str)
     
     #retreiving data from database and generate vcard for a particular employee
-    parser_retrieve = subparser.add_parser("rtr" ,help="retrieve data from database")
+    parser_retrieve = subparser.add_parser("empinfo" ,help="retrieve data from database")
     parser_retrieve.add_argument("id", help="ID of the employee whose data needs to be generated",type=str)
     parser_retrieve.add_argument("--vcard", help="Generate vcard details of employee_id to show it on terminal",action="store_true",default = False)
     parser_retrieve.add_argument("--vcf",help="Geenrate vcard file",action="store_true",default=False)
@@ -58,11 +58,11 @@ def parse_args():
 
     
     #retrieve leave data from leaves table and designation table
-    parser_initrtrlv = subparser.add_parser("rtrlv",help="Obtain data regarding leaves of employee")
+    parser_initrtrlv = subparser.add_parser("emplv",help="Obtain data regarding leaves of employee")
     parser_initrtrlv.add_argument("employee_id", help="employee id of whome the leave data needs to be retrieved")
     
     #Generate details of employees leaves on csv file
-    parser_initcsv = subparser.add_parser("rtrcsv",help="Generate details of employees leaves on csv file")
+    parser_initcsv = subparser.add_parser("leavecsv",help="Generate details of employees leaves on csv file")
     parser_initcsv.add_argument("-f","--filename",help="Provide file name for generating csv, only file name and no file extention is needed",action='store',default="lv")
 
        
@@ -354,11 +354,11 @@ def main():
     logger(args.verbose)
     operations = { "initdb"   : create_table,
                    "import"   : add_data_to_table_details,
-                   "rtr"      : retriving_data_from_database,
+                   "empinfo"  : retriving_data_from_database,
                    "genvcard" : genrate_vcard_file,
                    "initlv"   : add_data_to_leaves_table,
-                   "rtrlv"    : retrive_data_from_new_table,
-                   "rtrcsv"   : generate_leave_csv
+                   "emplv"    : retrive_data_from_new_table,
+                   "leavecsv" : generate_leave_csv
                  }
     operations[args.subcommand](args)
 
