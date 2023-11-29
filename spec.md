@@ -53,20 +53,47 @@
 
 - Data will be generated on the folder specified in the program and the direcory to store and data will be created in the folder which the user use for execution of program.
 
-- Execution of arguments
+## Execution of arguments
  
--- Log file is where all the data regarding the execution of file is stored which includes the log in the format provided below
-         '[DEBUG] 2023-11-15 15:40:56,104 | genvcf.py:37 | Writing row 15' 
-   the above is an example of debug log information of the vCard generation.
+ To get debug information use the following command.
+      [python3 <program_file_name> -v/--verbose]
    
--- The command provided below will help regarding what this program is used for and information regarding all its other arguments.
-      'python3 <program_file_name> -h/--help' 
+- The command provided below will help regarding what this program is used for and information regarding all its other arguments.
+      [python3 <program_file_name> -h/--help] 
 
--- The command provided below will print the debug log data in the terminal showing the debug log data for all the file generated. Running without -v/--verbos will show you       information regarding whether the files are generated or not.
-          'python3 <program_file_name> -v/--verbose' 
+- The command provided below will print the debug log data in the terminal showing the debug log data for all the file generated. Running without -v/--verbos will show you       information regarding whether the files are generated or not.
+      [python3 <program_file_name> -v/--verbose] 
           
--- By default a database name will be present in parser, this default database name is the name provided on config.ini to change this to another default database name just use this argument if theuser needs to add a new database name use this subparser command to do the same. Or else you can use the default database.
-          'python3 <program_file_name> -d/--dbname'
+- By default a database name will be present in parser, this default database name is the name provided on config.ini to change this to another default database name just use this argument if theuser needs to add a new database name use this subparser command to do the same. Or else you can use the default database.
+      [python3 <program_file_name> -d/--dbname]
+      
+- This command is used to create the database tables that are needed to store the data. The query for creation of tables is obtained from a file init.sql. Also data for designation table is inserted through this command.
+      [python3 <program_file_name> initdb]
+      
+- import command is used to load data to database tables and file command along with load command is used to add csv file name from which data is loaded to databse.
+      [python3 <program_file_name> import file]
+      
+- empinfo is used to retrieve data of a particular employee and all other subcommands are optional --vcard is used to show the vcard details of user in terminal, id should be used to get the details of thet particular employee and this id is ther employee-id , --vcf is used to generate vcard for that particular employee, --qrcd is used to generate qrcode for that employee.
+      [python3 <program_file_name> empinfo id --vcard --vcf --qrcd]
+      
+- genvcard is user to generate vcard for a particular number of employee, -n/--number is used to generate that much number of employee's vcards, --qrcd is used to generate qrcode for given number of employees. By default this number is set as 10.
+      [python3 <program_file_name> genvcard -n/--number --qrcd]
+      
+- initlv is used to insert data to leaves table. 'date' is the date in which employee was leave. employee_id is the id of employee from details table reason is the cause of leave. 
+      [python3 <program_file_name> initlv date employee_id reason]
+      
+- emplv command is used to retrieve leaves data regarding an employee by providing employee_id after typing rtrlv, the data will be shown on terminal.
+      [python3 <program_file_name> emplv employee_id]
+      
+- leavecsv command is to get details of leaves of each employee on a csv file and -f is a subcommand that can be used to provide csv filename without the file extention bydefault a filename is set 'lv.csv'.
+      [python3 <program_file_name> leavecsv -f]
+
+
+
+
+
+
+
 
 
 
