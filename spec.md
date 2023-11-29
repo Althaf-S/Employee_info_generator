@@ -1,8 +1,8 @@
-#OBJECTIVE
+# OBJECTIVE
 
 - Generate vcard qrcode and employee leave data for a list of employees whose details are provided in a CSV file.
 
-#INPUT
+# INPUT
 
 - CSV file from which data is extracted needs to be provided as command line argument to load data.
 
@@ -13,7 +13,7 @@
     
       Morgan, Melinda, Advertising Copywriter, melin.morga@smith_write.com, +71-(391)-2934
       
-#OUTPUT
+# OUTPUT
 
 - There will be two output one is the vCard file for each employee and the other is a qr code .png format file which can be scanned using a mobile phone camera to get the data regarding an employee.
         
@@ -41,7 +41,7 @@
             Maximum alloted leaves : 20
             Available leaves = 15 
             
-#EXECUTION
+# EXECUTION
 
 - Database to which the data needs to be added should be created manually (postgres is used for databse manipulations).
 
