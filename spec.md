@@ -55,7 +55,8 @@
 
 ## Execution of arguments
  
- To get debug information use the following command.
+- To get debug information use the following command.
+
          python3 <program_file_name> -v/--verbose
    
 - The command provided below will help regarding what this program is used for and information regarding all its other arguments.
