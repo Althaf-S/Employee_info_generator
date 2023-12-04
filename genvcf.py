@@ -67,6 +67,12 @@ def parse_args():
     #Generate details of employees leaves on csv file
     parser_initcsv = subparser.add_parser("leavecsv",help="Generate details of employees leaves on csv file")
     parser_initcsv.add_argument("-f","--filename",help="Provide file name for generating csv, only file name and no file extention is needed",action='store',default="lv")
+    
+    #Update tables:
+    parser_uptbemp = subparser.add_parser("dtdata",help="Update employee table")
+    #parser_uptbemp.add_argument("tb",help="give table name",action='store')
+    parser_uptbemp.add_argument("id",help="give table name",action='store')
+    parser_uptbemp.add_argument("date",help="give table name",action='store',type=str)
 
        
     args = parser.parse_args() 
@@ -88,10 +94,23 @@ def logger(is_logger):
 
 
 
-# Database implementation starts
+def delete_data(args):
+     db_uri = f"postgresql:///{args.dbname}"
+     session = hr.get_session(db_uri)
+     query = (sa.delete(hr.leaves)
+              .where((hr.leaves.empid == args.id)&
+                     (hr.leaves.date == args.date))
+             )
+     result = session.execute(query)
+     rows_deleted = result.rowcount
+     session.commit()
+     if rows_deleted == 0:
+       logger.error(f"No data found for id:-{args.id} date:-{args.date}")
+     else:
+       logger.info(f"Leave data for id:-{args.id} date:-{args.date} is deleted")
+     
 
-#def truncate_tables(args):
-#  db_uri = f"postgresql:///{args.dbname}"
+
 
 #Create details,leaves,designation table and add data to designation table
 def create_table(args):
@@ -162,31 +181,33 @@ def retriving_data_from_database(args):
               )
     x=session.execute(query).fetchall()
     session.commit()
-    for lastname,firstname,title,email,phone_number in x:
-      #print(lastname,firstname,title,email,phone_number)
-      print(f"""Name        : {firstname} {lastname}
+    if x != []:
+      for lastname,firstname,title,email,phone_number in x:
+        print(f"""Name        : {firstname} {lastname}
 Designation : {title}
 Email       : {email}
 Phone       : {phone_number}""")
-      if args.vcard:
-         print("\n",implement_vcf(lastname,firstname,title,email,phone_number))
-         logger.debug(lastname,firstname,title,email,phone_number)
-      if args.vcf:
-        if not os.path.exists('worker_vcf'):
-          os.mkdir('worker_vcf') 
-        imp_vcard = implement_vcf(lastname,firstname,title,email,phone_number)
-        with open(f'worker_vcf/{email}.vcf','w') as j:
-           j.write(imp_vcard)
-           logger.debug(f"Done generating vcard for {email}")
-        logger.info(f"Done generating vcard of {email}")
-      if args.qrcd:
-         if not os.path.exists('worker_vcf'):
-           os.mkdir('worker_vcf')
-         imp_qrcode = implement_qrcode(lastname,firstname,title,email,phone_number)
-         with open(f'worker_vcf/{email}.qr.png','wb') as f:
-            f.write(imp_qrcode)
-            logger.debug(f"Done generating qrcode for {email}")
-         logger.info(f"Done generating qrcode of {email}")
+        if args.vcard:
+           print("\n",implement_vcf(lastname,firstname,title,email,phone_number))
+           logger.debug(lastname,firstname,title,email,phone_number)
+        if args.vcf:
+          if not os.path.exists('worker_vcf'):
+            os.mkdir('worker_vcf') 
+          imp_vcard = implement_vcf(lastname,firstname,title,email,phone_number)
+          with open(f'worker_vcf/{email}.vcf','w') as j:
+             j.write(imp_vcard)
+             logger.debug(f"Done generating vcard for {email}")
+          logger.info(f"Done generating vcard of {email}")
+        if args.qrcd:
+           if not os.path.exists('worker_vcf'):
+             os.mkdir('worker_vcf')
+           imp_qrcode = implement_qrcode(lastname,firstname,title,email,phone_number)
+           with open(f'worker_vcf/{email}.qr.png','wb') as f:
+              f.write(imp_qrcode)
+              logger.debug(f"Done generating qrcode for {email}")
+           logger.info(f"Done generating qrcode of {email}")
+    else:
+      logger.error(f"Employee with id {args.id} not found")
   except Exception as e:
     logger.error("Employee with id %s not found",args.id)
 
@@ -435,7 +456,8 @@ def main():
                    "genvcard" : genrate_vcard_file,
                    "initlv"   : add_data_to_leaves_table,
                    "emplv"    : retrive_data_from_new_table,
-                   "leavecsv" : generate_leave_csv
+                   "leavecsv" : generate_leave_csv,
+                   "dtdata"   : delete_data
                  }
     operations[args.subcommand](args)
 
