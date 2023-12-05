@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1> Details for {{user.fname}} {{user.lname}}</h1>
+    <h2> {{user.title.title}} </h2>
+    <table>
+      <tr>
+        <th> First name </th>
+        <td> {{user.firstname}}</td>
+      </tr>
+      <tr>
+        <th> Last name </th>
+        <td> {{user.lastname}}</td>
+      </tr>
+      <tr>
+        <th> Email </th>
+        <td> {{user.email}}</td>
+      </tr>
+
+      <tr>
+        <th> Phone </th>
+        <td> {{user.ph_no}}</td>
+      </tr>
+      <tr>
+        <th> Number of leaves taken </th>
+          <td>{{leaves}}</td>
+    </table>
+    <a href="{{url_for('employees')}}"> Back to list of employees </a>
+</p>
+{% endblock %}

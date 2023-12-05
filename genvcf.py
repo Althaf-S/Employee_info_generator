@@ -9,7 +9,8 @@ import psycopg2 as pg
 import requests
 import sqlalchemy as sa
 
-import hr
+import models
+import web
 
 logger = None
 
@@ -32,7 +33,8 @@ def parse_args():
     parser.add_argument("-v", "--verbose", help="Print detailed logging", action='store_true', default=False)
     subparser = parser.add_subparsers(dest='subcommand',help = 'sub-command help')
   
-  
+    web_parser = subparser.add_parser("web", help="To run program on web")
+    
     #inittb subcommand 
     parser_initdb = subparser.add_parser("initdb",help="Initialization of table in the database")
     
@@ -96,10 +98,10 @@ def logger(is_logger):
 
 def delete_data(args):
      db_uri = f"postgresql:///{args.dbname}"
-     session = hr.get_session(db_uri)
-     query = (sa.delete(hr.leaves)
-              .where((hr.leaves.empid == args.id)&
-                     (hr.leaves.date == args.date))
+     session = models.get_session(db_uri)
+     query = (sa.delete(models.leaves)
+              .where((models.leaves.empid == args.id)&
+                     (models.leaves.date == args.date))
              )
      result = session.execute(query)
      rows_deleted = result.rowcount
@@ -116,8 +118,8 @@ def delete_data(args):
 def create_table(args):
   try:
     db_uri = f"postgresql:///{args.dbname}"
-    session = hr.get_session(db_uri)
-    engine = hr.create_engine(db_uri)
+    session = models.get_session(db_uri)
+    engine = models.create_engine(db_uri)
     tables = ['employee','leaves','designation']
     for table in tables:
       table_exists = engine.dialect.has_table(engine.connect(), table , schema='public')
@@ -125,12 +127,12 @@ def create_table(args):
     if table_exists:
        logger.error(f"All tables exists")
     else:
-      hr.create_all(db_uri)
-      designations = [hr.designation(title="Staff Engineer", max_leaves=20),
-                      hr.designation(title="Senior Engineer", max_leaves=18),
-                      hr.designation(title="Junior Engineer", max_leaves=12),
-                      hr.designation(title="Technical Lead", max_leaves=12),
-                      hr.designation(title="Project Manager", max_leaves=15)]
+      models.create_all(db_uri)
+      designations = [models.designation(title="Staff Engineer", max_leaves=20),
+                      models.designation(title="Senior Engineer", max_leaves=18),
+                      models.designation(title="Junior Engineer", max_leaves=12),
+                      models.designation(title="Technical Lead", max_leaves=12),
+                      models.designation(title="Project Manager", max_leaves=15)]
       session.add_all(designations)
       session.commit()
       logger.info("Tables created successfully")
@@ -146,14 +148,14 @@ def create_table(args):
 #Insert data into details table from csv 
 def add_data_to_table_details(args):
   db_uri = f"postgresql:///{args.dbname}"
-  session = hr.get_session(db_uri)
+  session = models.get_session(db_uri)
   try:
     with open(args.file,'r') as f:
       reader = csv.reader(f)
       for last_name,first_name,title,email,phone in reader:
-        q = sa.select(hr.designation).where(hr.designation.title==title)
+        q = sa.select(models.designation).where(models.designation.title==title)
         designation = session.execute(q).scalar_one()
-        employee = hr.employee(lastname=last_name,firstname=first_name,title=designation,email=email,ph_no=phone)
+        employee = models.employee(lastname=last_name,firstname=first_name,title=designation,email=email,ph_no=phone)
         logger.debug("Inserted data of %s",email)
         session.add(employee)
       session.commit()
@@ -168,16 +170,16 @@ def add_data_to_table_details(args):
 #Genereate vcard,qrcode for a single employee and also show vcard info on terminal
 def retriving_data_from_database(args):
   db_uri = f"postgresql:///{args.dbname}"
-  session = hr.get_session(db_uri)
+  session = models.get_session(db_uri)
   try:
     query =  ( sa.select
-               (hr.employee.lastname,
-                hr.employee.firstname,
-                hr.designation.title,
-                hr.employee.email,
-                hr.employee.ph_no)
-               .where(hr.employee.title_id==hr.designation.jobid,
-                      hr.employee.empid==args.id)
+               (models.employee.lastname,
+                models.employee.firstname,
+                models.designation.title,
+                models.employee.email,
+                models.employee.ph_no)
+               .where(models.employee.title_id==models.designation.jobid,
+                      models.employee.empid==args.id)
               )
     x=session.execute(query).fetchall()
     session.commit()
@@ -215,18 +217,18 @@ Phone       : {phone_number}""")
 #Generate vcard and qrcode for given number of employees
 def genrate_vcard_file(args):
   db_uri = f"postgresql:///{args.dbname}"
-  session = hr.get_session(db_uri)
+  session = models.get_session(db_uri)
   if not os.path.exists('worker_vcf'):
     os.mkdir('worker_vcf')
   count = 1
   try:
     query = (sa.select
-             (hr.employee.lastname,
-              hr.employee.firstname,
-              hr.designation.title,
-              hr.employee.email,
-              hr.employee.ph_no)
-             .where(hr.employee.title_id==hr.designation.jobid)
+             (models.employee.lastname,
+              models.employee.firstname,
+              models.designation.title,
+              models.employee.email,
+              models.employee.ph_no)
+             .where(models.employee.title_id==models.designation.jobid)
              )
     data = session.execute(query).fetchall()
     details = []
@@ -251,9 +253,9 @@ def genrate_vcard_file(args):
 #Insert data into table leaves
 def add_data_to_leaves_table(args):
   db_uri = f"postgresql:///{args.dbname}"
-  session = hr.get_session(db_uri)
+  session = models.get_session(db_uri)
   try:
-    insert_info = (hr.leaves(empid=args.employee_id,date=args.date,reason=args.reason))
+    insert_info = (models.leaves(empid=args.employee_id,date=args.date,reason=args.reason))
     session.add(insert_info)
     session.commit()
     logger.info("data inserted to leaves table")
@@ -266,23 +268,23 @@ def add_data_to_leaves_table(args):
 #retrieve number of leaves remaining for an employee (single employee)
 def retrive_data_from_new_table(args):
   db_uri = f"postgresql:///{args.dbname}"
-  session = hr.get_session(db_uri)
+  session = models.get_session(db_uri)
   try:
     rtr_count = (
                  sa.select
-                    (sa.func.count(hr.employee.empid),
-                    hr.employee.firstname,
-                    hr.employee.lastname,
-                    hr.designation.title,
-                    hr.employee.email,
-                    hr.designation.max_leaves
+                    (sa.func.count(models.employee.empid),
+                    models.employee.firstname,
+                    models.employee.lastname,
+                    models.designation.title,
+                    models.employee.email,
+                    models.designation.max_leaves
                     )
-                    .where(hr.employee.empid==args.employee_id,
-                           hr.designation.jobid==hr.employee.title_id,
-                           hr.leaves.empid==hr.employee.empid)
-                    .group_by(hr.employee.empid,
-                              hr.designation.title,
-                              hr.designation.max_leaves)
+                    .where(models.employee.empid==args.employee_id,
+                           models.designation.jobid==models.employee.title_id,
+                           models.leaves.empid==models.employee.empid)
+                    .group_by(models.employee.empid,
+                              models.designation.title,
+                              models.designation.max_leaves)
                   )
 
     data = session.execute(rtr_count).fetchall()
@@ -305,14 +307,14 @@ Total leaves taken : {count_serial_number}"""
     if data == []:
        query = (
                 sa.select
-                (hr.designation.max_leaves,
-                hr.employee.firstname,
-                hr.employee.lastname,
-                hr.employee.email,
-                hr.designation.title
+                (models.designation.max_leaves,
+                models.employee.firstname,
+                models.employee.lastname,
+                models.employee.email,
+                models.designation.title
                 )
-                .where(hr.employee.empid == args.employee_id,
-                       hr.designation.jobid==hr.employee.title_id)
+                .where(models.employee.empid == args.employee_id,
+                       models.designation.jobid==models.employee.title_id)
                 )
        leaves = session.execute(query).fetchall()
        for num_of_leaves,firstname,lastname,email,designation in leaves:
@@ -329,7 +331,7 @@ Total leaves taken : 0"""
 #Generate details of employees leaves on csv file
 def generate_leave_csv(args):
   db_uri = f"postgresql:///{args.dbname}"
-  session = hr.get_session(db_uri)
+  session = models.get_session(db_uri)
   with open(f"{args.filename}.csv","w") as f:
     data = csv.writer(f)
     a = "Employee_id","firstname","lastname","email","title","Total number of leaves","Leaves left"
@@ -337,7 +339,7 @@ def generate_leave_csv(args):
   f.close()
   query0 = (
             sa.select
-            (sa.func.count(hr.employee.empid))
+            (sa.func.count(models.employee.empid))
             )
   x = session.execute(query0).fetchall()
   for i in x:
@@ -345,23 +347,23 @@ def generate_leave_csv(args):
       count = j
   for i in range (1,count+1):
     query1 = (
-              sa.select(hr.leaves.empid)
-              .join(hr.employee,hr.employee.empid==hr.leaves.empid)
-              .where(hr.employee.empid==i)
+              sa.select(models.leaves.empid)
+              .join(models.employee,models.employee.empid==models.leaves.empid)
+              .where(models.employee.empid==i)
              )
     data = (session.execute(query1).fetchall())
     if data == []:
       query2 = (
                 sa.select
-                (hr.employee.empid,
-                 hr.employee.firstname,
-                 hr.employee.lastname,
-                 hr.employee.email,
-                 hr.designation.title,
-                 hr.designation.max_leaves
+                (models.employee.empid,
+                 models.employee.firstname,
+                 models.employee.lastname,
+                 models.employee.email,
+                 models.designation.title,
+                 models.designation.max_leaves
                 )
-                .where(hr.employee.empid == i,
-                       hr.employee.title_id == hr.designation.jobid)
+                .where(models.employee.empid == i,
+                       models.employee.title_id == models.designation.jobid)
                 )
       n = session.execute(query2).fetchall()
       for serial_number,firstname,lastname,email,title,num_of_leaves in n:
@@ -373,25 +375,25 @@ def generate_leave_csv(args):
     else:
       query3 = (
                 sa.select
-                (hr.employee.empid,
-                 hr.employee.firstname,
-                 hr.employee.lastname,
-                 hr.employee.email,
-                 hr.designation.title,
-                 hr.designation.max_leaves
+                (models.employee.empid,
+                 models.employee.firstname,
+                 models.employee.lastname,
+                 models.employee.email,
+                 models.designation.title,
+                 models.designation.max_leaves
                 )
-                .where(hr.employee.empid == i,
-                       hr.employee.title_id == hr.designation.jobid)
+                .where(models.employee.empid == i,
+                       models.employee.title_id == models.designation.jobid)
                 )
       n = session.execute(query3).fetchall()
       for serial_number,firstname,lastname,email,title,num_of_leaves in n:
         num_leaves = num_of_leaves
       query4 = (
                 sa.select
-                          (sa.func.count(hr.leaves.empid),
-                          hr.leaves.empid)
-                          .where(hr.leaves.empid==i)
-                          .group_by(hr.leaves.empid)
+                          (sa.func.count(models.leaves.empid),
+                          models.leaves.empid)
+                          .where(models.leaves.empid==i)
+                          .group_by(models.leaves.empid)
                )
       m = session.execute(query4).fetchall()
       for count_employee_id,employee_id in m:
@@ -410,6 +412,13 @@ def generate_leave_csv(args):
   
   
 # Database implementation ends
+
+#web implementaion starts
+
+def implementing_web(args):
+    web.app.config["SQLALCHEMY_DATABASE_URI"] = f"postgresql:///{args.dbname}"
+    web.db.init_app(web.app)
+    web.app.run()  
 
 def implement_vcf(last_name,first_name,job,email,ph_no):
   return f"""
@@ -457,7 +466,8 @@ def main():
                    "initlv"   : add_data_to_leaves_table,
                    "emplv"    : retrive_data_from_new_table,
                    "leavecsv" : generate_leave_csv,
-                   "dtdata"   : delete_data
+                   "dtdata"   : delete_data,
+                   "web"      : implementing_web
                  }
     operations[args.subcommand](args)
 
