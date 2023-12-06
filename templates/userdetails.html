@@ -1,7 +1,19 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <h1> Details for {{user.fname}} {{user.lname}}</h1>
+
+<div class = "container-fluid">
+<div class = "row">
+<div class = "col-4">
+  <h1>List of employees</h1>
+      <ol>
+        {%for u in all_user %}
+        <li> <a href="{{url_for('employee_details', empid = u.empid)}}">{{u.firstname}} {{u.lastname}}</a></li>
+        {%endfor%}
+      </ol>
+</div>
+<div class = "col-8">
+    <h1> Details for {{user.firstname}} {{user.lastname}}</h1>
     <h2> {{user.title.title}} </h2>
     <table>
       <tr>
@@ -29,6 +41,20 @@
           <td>{{max_leaves}}</td>
       </tr>
     </table>
-    <a href="{{url_for('employees')}}"> Back to list of employees </a>
+  <div>
+    <h1> Enter leave data for user </h1>
+<form action="{{ url_for('employee_details', empid=user.empid) }}" method="post">
+    <label for="date">Date:</label>
+    <input type="date" name="date" required>
+    <br>
+    <label for="reason">Reason:</label>
+    <textarea id="reason" name="reason" rows="4" cols="10" required></textarea>
+    <br>
+    <input type="submit" value="Submit">
+</form>
+  </div>
 </p>
+</div>
+  </div>
+</div>
 {% endblock %}

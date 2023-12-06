@@ -1,12 +1,20 @@
 {% extends 'base.html' %}
+
 {% block content %}
+<div class = "container-fluid">
+<div class = "row">
+  <div class = "col-5">
   <h1>List of employees</h1>
     <p>
       <ol>
         {%for u in users %}
         <li> <a href="{{url_for('employee_details', empid = u.empid)}}">{{u.firstname}} {{u.lastname}}</a></li>
         {%endfor%}
-        <a href = />Back to home page</a>
       </ol>
     </p>
+  </div> 
+  </div>
+</div>
 {% endblock %}
+
+
