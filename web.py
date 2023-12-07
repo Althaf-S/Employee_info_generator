@@ -39,5 +39,9 @@ def employee_details(empid):
     db.session.commit()
     return redirect(url_for("employee_details",empid=empid))
   return render_template("userdetails.html", user=user, leaves=leaves, max_leaves=max_leaves, all_user=all_user)
+  
+@app.route("/about")
+def about():
+  return render_template("about.html")
 
   

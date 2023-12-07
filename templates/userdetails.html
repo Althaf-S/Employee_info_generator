@@ -6,11 +6,13 @@
 <div class = "row">
 <div class = "col-4">
   <h1>List of employees</h1>
+    <div style= "height: 742px; overflow: scroll;">
       <ol>
         {%for u in all_user %}
         <li> <a href="{{url_for('employee_details', empid = u.empid)}}">{{u.firstname}} {{u.lastname}}</a></li>
         {%endfor%}
       </ol>
+  </div>
 </div>
 <div class = "col-8">
     <h1> Details for {{user.firstname}} {{user.lastname}}</h1>
