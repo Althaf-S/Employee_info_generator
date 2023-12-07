@@ -43,19 +43,6 @@
           <td>{{max_leaves}}</td>
       </tr>
     </table>
-  <div>
-    <h1> Enter leave data for user </h1>
-<form action="{{ url_for('employee_details', empid=user.empid) }}" method="post">
-    <label for="date">Date:</label>
-    <input type="date" name="date" required>
-    <br>
-    <label for="reason">Reason:</label>
-    <textarea id="reason" name="reason" rows="4" cols="10" required></textarea>
-    <br>
-    <input type="submit" value="Submit">
-</form>
-  </div>
-</p>
 </div>
   </div>
 </div>
