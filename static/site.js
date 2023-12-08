@@ -28,6 +28,16 @@ function gotEmployees(data) {
           <td> ${data.max_leaves}</td>
       </tr>
     </table>
+        <h1> Enter leave data for user </h1>
+<form action = /addleave/${data.employee_id} method="post">
+    <label for="date">Date:</label>
+    <input type="date" name="date" required>
+    <br>
+    <label for="reason">Reason:</label>
+    <textarea id="reason" name="reason" rows="4" cols="10" required></textarea>
+    <br>
+    <input type="submit" value="Submit">
+</form>
 `;
 
 
