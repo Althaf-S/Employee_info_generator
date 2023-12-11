@@ -45,8 +45,15 @@ function gotEmployees(data) {
 }
 
 $(function() {
-    $("a.userlink").click(function (ev) {
+    $("a.userlink").one("click", function (ev) {
         $.get(ev.target.href, gotEmployees);
         ev.preventDefault();
+        $(this).click(function () { return false; });
         });
 });
+
+
+
+
+
+
