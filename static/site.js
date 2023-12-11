@@ -1,6 +1,7 @@
 function gotEmployees(data) {
     console.log(data);
-    $("#userdetails")[0].innerHTML=`<h1> Details for ${data.firstname}  ${data.lastname}</h1>
+    $("#userdetails")[0].innerHTML=`<div id="successMessage"></div>
+   <h1> Details for ${data.firstname}  ${data.lastname}</h1>
     <h2> ${data.title} </h2>
     <table>
       <tr>
@@ -43,6 +44,7 @@ function gotEmployees(data) {
 }
 
 
+
 $(function() {
     $("a.userlink").click(function (ev) {
         $.get(ev.target.href, gotEmployees);
@@ -57,12 +59,12 @@ $(function() {
             url: $(this).attr("action"),
             type: "POST",
             data: formData,
-            success: function(response) {
-                alert("Form submitted successfully");
-                window.location.href = "/employees";
-            },
+             success: function(response) {
+            alert("Form submitted successfully");
+            window.location.href = "/employees";
+    },
             error: function(error) {
-                alert("Form submitted successfully");
+                alert("Form not submitted because same data present in database");
             }
         });
     });

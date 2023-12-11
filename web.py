@@ -15,8 +15,8 @@ def index():
  
 @app.route("/employees")
 def employees():
-    query = db.select(models.Employee).order_by(models.Employee.firstname)
-    users = db.session.execute(query).scalars()
+    employees = db.select(models.Employee).order_by(models.Employee.firstname)
+    users = db.session.execute(employees).scalars()
     return flask.render_template("userlist.html", users = users)
 
   
