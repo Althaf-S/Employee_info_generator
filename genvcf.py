@@ -99,9 +99,9 @@ def logger(is_logger):
 def delete_data(args):
      db_uri = f"postgresql:///{args.dbname}"
      session = models.get_session(db_uri)
-     query = (sa.delete(models.Leaves)
-              .where((models.Leaves.empid == args.id)&
-                     (models.Leaves.date == args.date))
+     query = (sa.delete(models.leaves)
+              .where((models.leaves.empid == args.id)&
+                     (models.leaves.date == args.date))
              )
      result = session.execute(query)
      rows_deleted = result.rowcount

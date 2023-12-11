@@ -20,7 +20,7 @@ class Employee(HRDBBase):
   title_id : Mapped[int] = mapped_column(ForeignKey("designation.jobid"))
   email    : Mapped[str] = mapped_column(String(150))
   ph_no    : Mapped[str] = mapped_column(String(50))
-  title    : Mapped["designation"] = relationship(back_populates='employees')
+  title    : Mapped["Designation"] = relationship(back_populates='employees')
   
 class Designation(HRDBBase):
   __tablename__ = "designation"
@@ -28,7 +28,7 @@ class Designation(HRDBBase):
   jobid      : Mapped[int] = mapped_column(primary_key=True)
   title      : Mapped[str] = mapped_column(String(100))
   max_leaves : Mapped[int] = mapped_column(Integer)
-  employees  : Mapped[List["employee"]] = relationship(back_populates='title')
+  employees  : Mapped[List["Employee"]] = relationship(back_populates='title')
 
 class Leaves(HRDBBase):
   __tablename__ = "leaves"
