@@ -99,9 +99,9 @@ def logger(is_logger):
 def delete_data(args):
      db_uri = f"postgresql:///{args.dbname}"
      session = models.get_session(db_uri)
-     query = (sa.delete(models.leaves)
-              .where((models.leaves.empid == args.id)&
-                     (models.leaves.date == args.date))
+     query = (sa.delete(models.Leaves)
+              .where((models.Leaves.empid == args.id)&
+                     (models.Leaves.date == args.date))
              )
      result = session.execute(query)
      rows_deleted = result.rowcount
@@ -128,11 +128,11 @@ def create_table(args):
        logger.error(f"All tables exists")
     else:
       models.create_all(db_uri)
-      designations = [models.designation(title="Staff Engineer", max_leaves=20),
-                      models.designation(title="Senior Engineer", max_leaves=18),
-                      models.designation(title="Junior Engineer", max_leaves=12),
-                      models.designation(title="Technical Lead", max_leaves=12),
-                      models.designation(title="Project Manager", max_leaves=15)]
+      designations = [models.Designation(title="Staff Engineer", max_leaves=20),
+                      models.Designation(title="Senior Engineer", max_leaves=18),
+                      models.Designation(title="Junior Engineer", max_leaves=12),
+                      models.Designation(title="Technical Lead", max_leaves=12),
+                      models.Designation(title="Project Manager", max_leaves=15)]
       session.add_all(designations)
       session.commit()
       logger.info("Tables created successfully")
@@ -153,9 +153,9 @@ def add_data_to_table_details(args):
     with open(args.file,'r') as f:
       reader = csv.reader(f)
       for last_name,first_name,title,email,phone in reader:
-        q = sa.select(models.designation).where(models.designation.title==title)
+        q = sa.select(models.Designation).where(models.Designation.title==title)
         designation = session.execute(q).scalar_one()
-        employee = models.employee(lastname=last_name,firstname=first_name,title=designation,email=email,ph_no=phone)
+        employee = models.Employee(lastname=last_name,firstname=first_name,title=designation,email=email,ph_no=phone)
         logger.debug("Inserted data of %s",email)
         session.add(employee)
       session.commit()
@@ -173,13 +173,13 @@ def retriving_data_from_database(args):
   session = models.get_session(db_uri)
   try:
     query =  ( sa.select
-               (models.employee.lastname,
-                models.employee.firstname,
-                models.designation.title,
-                models.employee.email,
-                models.employee.ph_no)
-               .where(models.employee.title_id==models.designation.jobid,
-                      models.employee.empid==args.id)
+               (models.Employee.lastname,
+                models.Employee.firstname,
+                models.Designation.title,
+                models.Employee.email,
+                models.Employee.ph_no)
+               .where(models.Employee.title_id==models.Designation.jobid,
+                      models.Employee.empid==args.id)
               )
     x=session.execute(query).fetchall()
     session.commit()
@@ -223,12 +223,12 @@ def genrate_vcard_file(args):
   count = 1
   try:
     query = (sa.select
-             (models.employee.lastname,
-              models.employee.firstname,
-              models.designation.title,
-              models.employee.email,
-              models.employee.ph_no)
-             .where(models.employee.title_id==models.designation.jobid)
+             (models.Employee.lastname,
+              models.Employee.firstname,
+              models.Designation.title,
+              models.Employee.email,
+              models.Employee.ph_no)
+             .where(models.Employee.title_id==models.Designation.jobid)
              )
     data = session.execute(query).fetchall()
     details = []
@@ -255,7 +255,7 @@ def add_data_to_leaves_table(args):
   db_uri = f"postgresql:///{args.dbname}"
   session = models.get_session(db_uri)
   try:
-    insert_info = (models.leaves(empid=args.employee_id,date=args.date,reason=args.reason))
+    insert_info = (models.Leaves(empid=args.employee_id,date=args.date,reason=args.reason))
     session.add(insert_info)
     session.commit()
     logger.info("data inserted to leaves table")
@@ -272,19 +272,19 @@ def retrive_data_from_new_table(args):
   try:
     rtr_count = (
                  sa.select
-                    (sa.func.count(models.employee.empid),
-                    models.employee.firstname,
-                    models.employee.lastname,
-                    models.designation.title,
-                    models.employee.email,
-                    models.designation.max_leaves
+                    (sa.func.count(models.Employee.empid),
+                    models.Employee.firstname,
+                    models.Employee.lastname,
+                    models.Designation.title,
+                    models.Employee.email,
+                    models.Designation.max_leaves
                     )
-                    .where(models.employee.empid==args.employee_id,
-                           models.designation.jobid==models.employee.title_id,
-                           models.leaves.empid==models.employee.empid)
-                    .group_by(models.employee.empid,
-                              models.designation.title,
-                              models.designation.max_leaves)
+                    .where(models.Employee.empid==args.employee_id,
+                           models.Designation.jobid==models.Employee.title_id,
+                           models.Leaves.empid==models.Employee.empid)
+                    .group_by(models.Employee.empid,
+                              models.Designation.title,
+                              models.Designation.max_leaves)
                   )
 
     data = session.execute(rtr_count).fetchall()
@@ -307,14 +307,14 @@ Total leaves taken : {count_serial_number}"""
     if data == []:
        query = (
                 sa.select
-                (models.designation.max_leaves,
-                models.employee.firstname,
-                models.employee.lastname,
-                models.employee.email,
-                models.designation.title
+                (models.Designation.max_leaves,
+                models.Employee.firstname,
+                models.Employee.lastname,
+                models.Employee.email,
+                models.Designation.title
                 )
-                .where(models.employee.empid == args.employee_id,
-                       models.designation.jobid==models.employee.title_id)
+                .where(models.Employee.empid == args.employee_id,
+                       models.Designation.jobid==models.Employee.title_id)
                 )
        leaves = session.execute(query).fetchall()
        for num_of_leaves,firstname,lastname,email,designation in leaves:
@@ -339,7 +339,7 @@ def generate_leave_csv(args):
   f.close()
   query0 = (
             sa.select
-            (sa.func.count(models.employee.empid))
+            (sa.func.count(models.Employee.empid))
             )
   x = session.execute(query0).fetchall()
   for i in x:
@@ -347,23 +347,23 @@ def generate_leave_csv(args):
       count = j
   for i in range (1,count+1):
     query1 = (
-              sa.select(models.leaves.empid)
-              .join(models.employee,models.employee.empid==models.leaves.empid)
-              .where(models.employee.empid==i)
+              sa.select(models.Leaves.empid)
+              .join(models.Employee,models.Employee.empid==models.Leaves.empid)
+              .where(models.Employee.empid==i)
              )
     data = (session.execute(query1).fetchall())
     if data == []:
       query2 = (
                 sa.select
-                (models.employee.empid,
-                 models.employee.firstname,
-                 models.employee.lastname,
-                 models.employee.email,
-                 models.designation.title,
-                 models.designation.max_leaves
+                (models.Employee.empid,
+                 models.Employee.firstname,
+                 models.Employee.lastname,
+                 models.Employee.email,
+                 models.Designation.title,
+                 models.Designation.max_leaves
                 )
-                .where(models.employee.empid == i,
-                       models.employee.title_id == models.designation.jobid)
+                .where(models.Employee.empid == i,
+                       models.Employee.title_id == models.Designation.jobid)
                 )
       n = session.execute(query2).fetchall()
       for serial_number,firstname,lastname,email,title,num_of_leaves in n:
@@ -375,25 +375,25 @@ def generate_leave_csv(args):
     else:
       query3 = (
                 sa.select
-                (models.employee.empid,
-                 models.employee.firstname,
-                 models.employee.lastname,
-                 models.employee.email,
-                 models.designation.title,
-                 models.designation.max_leaves
+                (models.Employee.empid,
+                 models.Employee.firstname,
+                 models.Employee.lastname,
+                 models.Employee.email,
+                 models.Designation.title,
+                 models.Designation.max_leaves
                 )
-                .where(models.employee.empid == i,
-                       models.employee.title_id == models.designation.jobid)
+                .where(models.Employee.empid == i,
+                       models.Employee.title_id == models.Designation.jobid)
                 )
       n = session.execute(query3).fetchall()
       for serial_number,firstname,lastname,email,title,num_of_leaves in n:
         num_leaves = num_of_leaves
       query4 = (
                 sa.select
-                          (sa.func.count(models.leaves.empid),
-                          models.leaves.empid)
-                          .where(models.leaves.empid==i)
-                          .group_by(models.leaves.empid)
+                          (sa.func.count(models.Leaves.empid),
+                          models.Leaves.empid)
+                          .where(models.Leaves.empid==i)
+                          .group_by(models.Leaves.empid)
                )
       m = session.execute(query4).fetchall()
       for count_employee_id,employee_id in m:

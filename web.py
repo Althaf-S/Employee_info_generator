@@ -12,24 +12,22 @@ db = models.SQLAlchemy(model_class = models.HRDBBase)
 def index():
   if flask.request.method == "GET":
     return flask.render_template("index.html")
-  elif flask.request.method == "POST":
-    return "POSTED!"
  
 @app.route("/employees")
 def employees():
-    query = db.select(models.employee).order_by(models.employee.firstname)
+    query = db.select(models.Employee).order_by(models.Employee.firstname)
     users = db.session.execute(query).scalars()
     return flask.render_template("userlist.html", users = users)
 
   
 @app.route("/employees/<int:empid>")
 def employee_details(empid):
-  query = db.select(models.employee).where(models.employee.empid == empid)
-  user = db.session.execute(query).scalar()
-  query1 = db.select(func.count(models.employee.empid)).join(models.leaves,models.employee.empid == models.leaves.empid).where(models.employee.empid==empid)
-  leaves = db.session.execute(query1).scalar()
-  query2 = db.select(models.designation.max_leaves).where(models.designation.jobid == models.employee.title_id, models.employee.empid==empid)
-  max_leaves = db.session.execute(query2).scalar()
+  employees = db.select(models.Employee).where(models.Employee.empid == empid)
+  user = db.session.execute(employees).scalar()
+  emp_count = db.select(func.count(models.Employee.empid)).join(models.Leaves,models.Employee.empid == models.Leaves.empid).where(models.Employee.empid==empid)
+  leaves = db.session.execute(emp_count).scalar()
+  leave_count = db.select(models.Designation.max_leaves).where(models.Designation.jobid == models.Employee.title_id, models.Employee.empid==empid)
+  max_leaves = db.session.execute(leave_count).scalar()
   ret = {"employee_id" : user.empid,
          "firstname" : user.firstname,
          "lastname" : user.lastname,
@@ -37,27 +35,26 @@ def employee_details(empid):
          "email" : user.email,
          "phone" : user.ph_no,
          "leaves": leaves,
-         "max_leaves" : max_leaves}
-  if request.method == "POST":
-    date = request.form['date']
-    reason = request.form['reason'] 
-    query3 = models.leaves(empid=empid ,date=date, reason=reason)
-    db.session.add(query3)
-    db.session.commit()
-    return redirect(url_for("employee_details"))         
+         "max_leaves" : max_leaves}         
   return flask.jsonify(ret)
-    
 
+@app.errorhandler(500)   
+def page_not_found(error):
+    return render_template('500.html'), 500
+
+@app.errorhandler(404)   
+def page_not_found(error):
+    return render_template('404.html'), 404
 
 @app.route("/addleave/<int:empid>", methods=["GET", "POST"])
 def addleave(empid):
-  query = db.select(models.employee).where(models.employee.empid == empid)
-  user = db.session.execute(query).scalar()
+  employees = db.select(models.Employee).where(models.Employee.empid == empid)
+  user = db.session.execute(employees).scalar()
   if request.method == "POST":
     date = request.form['date']
     reason = request.form['reason'] 
-    query3 = models.leaves(empid=empid ,date=date, reason=reason)
-    db.session.add(query3)
+    insert_data = models.Leaves(empid=empid ,date=date, reason=reason)
+    db.session.add(insert_data)
     db.session.commit()
     return redirect(url_for("employees"))
   

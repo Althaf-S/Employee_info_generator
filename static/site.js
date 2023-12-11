@@ -29,7 +29,7 @@ function gotEmployees(data) {
       </tr>
     </table>
         <h1> Enter leave data for user </h1>
-<form action = /addleave/${data.employee_id} method="post">
+<form action = /addleave/${data.employee_id} method="post" id="leaveForm">
     <label for="date">Date:</label>
     <input type="date" name="date" required>
     <br>
@@ -40,17 +40,34 @@ function gotEmployees(data) {
 </form>
 `;
 
-
-
 }
 
+
 $(function() {
-    $("a.userlink").one("click", function (ev) {
+    $("a.userlink").click(function (ev) {
         $.get(ev.target.href, gotEmployees);
         ev.preventDefault();
-        $(this).click(function () { return false; });
+    });
+    $("#userdetails").on("submit", "#leaveForm", function(event) {
+        event.preventDefault();
+        
+        var formData = $(this).serialize();
+        
+        $.ajax({
+            url: $(this).attr("action"),
+            type: "POST",
+            data: formData,
+            success: function(response) {
+                alert("Form submitted successfully");
+                window.location.href = "/employees";
+            },
+            error: function(error) {
+                alert("Form submitted successfully");
+            }
         });
+    });
 });
+
 
 
 
