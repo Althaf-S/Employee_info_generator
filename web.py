@@ -61,8 +61,6 @@ def page_not_found(error):
 
 @app.route("/leave/<int:empid>", methods=["GET", "POST"])
 def addleave(empid):
-  employees = db.select(models.Employee).where(models.Employee.empid == empid)
-  user = db.session.execute(employees).scalar()
   if request.method == "POST":
     data = request.get_json()
     date = data.get('date')
