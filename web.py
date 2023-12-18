@@ -61,17 +61,24 @@ def page_not_found(error):
 
 @app.route("/leave/<int:empid>", methods=["GET", "POST"])
 def addleave(empid):
-  if request.method == "POST":
-    data = request.get_json()
-    date = data.get('date')
-    reason = data.get('reason')
-    if not date or not reason:
-       return flask.jsonify({'error': 'Enter data'}), 400
-    insert_data = models.Leaves(empid=empid ,date=date, reason=reason)
-    db.session.add(insert_data)
-    db.session.commit()
-    return flask.jsonify({'message': 'Leave submitted successfully'}), 200
-  return flask.jsonify({'error': 'Method Not Allowed'}), 405
+  emp_count = db.select(func.count(models.Employee.empid)).join(models.Leaves,models.Employee.empid == models.Leaves.empid).where(models.Employee.empid==empid)
+  leaves = db.session.execute(emp_count).scalar()
+  leave_count = db.select(models.Designation.max_leaves).where(models.Designation.jobid == models.Employee.title_id, models.Employee.empid==empid)
+  max_leaves = db.session.execute(leave_count).scalar()
+  if int(leaves) <= int(max_leaves) -1 :
+    if request.method == "POST":
+      data = request.get_json()
+      date = data.get('date')
+      reason = data.get('reason')
+      if not date or not reason:
+         return flask.jsonify({'error': 'Enter data'}), 400
+      insert_data = models.Leaves(empid=empid ,date=date, reason=reason)
+      db.session.add(insert_data)
+      db.session.commit()
+      return flask.jsonify({'message': 'Leave submitted successfully'}), 200
+    return flask.jsonify({'error': 'Method Not Allowed'}), 405
+  else :
+    return flask.jsonify({'error': 'leaves exceeds maximum number of leaves'}), 405
   
 
 
