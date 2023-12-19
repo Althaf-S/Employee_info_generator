@@ -5,7 +5,7 @@
 # INPUT
 - The file from whichnthe whole backend runs is genvcf.py do while trying to run the application's backend use 
 
-     [python3 genvcf.py <args>]
+        python3 genvcf.py <args>
 
 - CSV file from which data is extracted needs to be provided as command line argument to load data.
 
