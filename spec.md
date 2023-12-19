@@ -3,6 +3,9 @@
 - Generate vcard qrcode and employee leave data for a list of employees whose details are provided in a CSV file.
 
 # INPUT
+- The file from whichnthe whole backend runs is genvcf.py do while trying to run the application's backend use 
+
+     [python3 genvcf.py <args>]
 
 - CSV file from which data is extracted needs to be provided as command line argument to load data.
 
@@ -54,6 +57,10 @@
 - Data will be generated on the folder specified in the program and the direcory to store and data will be created in the folder which the user use for execution of program.
 
 ## Execution of arguments
+
+- To  start localhost:5000 i.e; our backend server we need to use command
+  
+         python3 <program_file_name> web
  
 - To get debug information use the following command.
 
