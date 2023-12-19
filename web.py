@@ -10,7 +10,7 @@ app = flask.Flask("hrms")
 CORS(app)
 db = models.SQLAlchemy(model_class = models.HRDBBase)
 
-@app.route("/",methods = ["GET","POST"])
+@app.route("/",methods = ["GET","POST"]  )
 def index():
   if flask.request.method == "GET":
     return flask.render_template("index.html")
