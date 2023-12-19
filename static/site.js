@@ -30,7 +30,7 @@ function gotEmployees(data) {
       </tr>
     </table>
         <h1> Enter leave data for user </h1>
-<form action = /addleave/${data.employee_id} method="post" id="leaveForm">
+<form action = /leave/${data.employee_id} method="post" id="leaveForm">
     <label for="date">Date:</label>
     <input type="date" name="date" required>
     <br>

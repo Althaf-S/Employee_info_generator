@@ -43,8 +43,10 @@
 
       </div>
     </div>
+    <div id="root">
 
-
+    </div>
+    
     <!-- Optional JavaScript; choose one of the two! -->
 
     <!-- Option 1: Bootstrap Bundle with Popper -->
@@ -53,8 +55,11 @@
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"
     integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo="
     crossorigin="anonymous"></script>
-
-    <script src="{{url_for('static', filename='/site.js')}}"></script>
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+    <script src="{{url_for('static', filename='/react.js')}}" type="text/babel"></script>
+    <!--script src="{{url_for('static', filename='/site.js')}}"></script-->
 
     <!-- Option 2: Separate Popper and Bootstrap JS -->
     <!--
