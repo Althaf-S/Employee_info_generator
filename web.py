@@ -39,6 +39,10 @@ def employee_details(empid):
   leaves = db.session.execute(emp_count).scalar()
   leave_count = db.select(models.Designation.max_leaves).where(models.Designation.jobid == models.Employee.title_id, models.Employee.empid==empid)
   max_leaves = db.session.execute(leave_count).scalar()
+  if int(leaves) >= int(max_leaves) -1 :
+     leaves_left = 0
+  if  int(leaves) < int(max_leaves) -1:
+     leaves_left = int(max_leaves) - int(leaves) 
   ret = []
   details = {"employee_id" : user.empid,
          "firstname" : user.firstname,
@@ -47,7 +51,8 @@ def employee_details(empid):
          "email" : user.email,
          "phone" : user.ph_no,
          "leaves": leaves,
-         "max_leaves" : max_leaves}   
+         "max_leaves" : max_leaves,
+         "leaves_left" : leaves_left}   
   ret.append(details)      
   return flask.jsonify(ret)
 
@@ -65,8 +70,7 @@ def addleave(empid):
   leaves = db.session.execute(emp_count).scalar()
   leave_count = db.select(models.Designation.max_leaves).where(models.Designation.jobid == models.Employee.title_id, models.Employee.empid==empid)
   max_leaves = db.session.execute(leave_count).scalar()
-  if int(leaves) <= int(max_leaves) -1 :
-    if request.method == "POST":
+  if request.method == "POST":
       data = request.get_json()
       date = data.get('date')
       reason = data.get('reason')
@@ -76,10 +80,9 @@ def addleave(empid):
       db.session.add(insert_data)
       db.session.commit()
       return flask.jsonify({'message': 'Leave submitted successfully'}), 200
-    return flask.jsonify({'error': 'Method Not Allowed'}), 405
   else :
-    return flask.jsonify({'error': 'leaves exceeds maximum number of leaves'}), 405
-  
+      return flask.jsonify({'error': 'leaves exceeds maximum number of leaves'}), 405
+   
 
 
   
