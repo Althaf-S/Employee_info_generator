@@ -1,8 +1,11 @@
+from datetime import datetime
+
 import flask
 from flask import render_template,request,redirect,url_for
 from flask_cors import CORS
 
 import models
+from models import Leaves
 from sqlalchemy import func
 
 
@@ -10,7 +13,7 @@ app = flask.Flask("hrms")
 CORS(app)
 db = models.SQLAlchemy(model_class = models.HRDBBase)
 
-@app.route("/",methods = ["GET","POST"])
+@app.route("/",methods = ["GET","POST"]  )
 def index():
   if flask.request.method == "GET":
     return flask.render_template("index.html")
@@ -39,6 +42,13 @@ def employee_details(empid):
   leaves = db.session.execute(emp_count).scalar()
   leave_count = db.select(models.Designation.max_leaves).where(models.Designation.jobid == models.Employee.title_id, models.Employee.empid==empid)
   max_leaves = db.session.execute(leave_count).scalar()
+  leaves_taken = db.select(models.Leaves.date,models.Leaves.reason).filter(models.Leaves.empid == empid)
+  leaves_record = db.session.execute(leaves_taken).fetchall()
+  leave_data = []
+  for date,reason in leaves_record:
+    data = [f'Date:- {date.strftime("%a, %d %b %Y")} \t Reason:- {reason}']
+    leave_data.append(data)
+    
   if int(leaves) >= int(max_leaves) -1 :
      leaves_left = 0
   if  int(leaves) < int(max_leaves) -1:
@@ -52,7 +62,8 @@ def employee_details(empid):
          "phone" : user.ph_no,
          "leaves": leaves,
          "max_leaves" : max_leaves,
-         "leaves_left" : leaves_left}   
+         "leaves_left" : leaves_left,
+         "leave_data" : leave_data}   
   ret.append(details)      
   return flask.jsonify(ret)
 
