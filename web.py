@@ -92,7 +92,7 @@ def addleave(empid):
       db.session.commit()
       return flask.jsonify({'message': 'Leave submitted successfully'}), 200
   else :
-      return flask.jsonify({'error': 'leaves exceeds maximum number of leaves'}), 405
+      return flask.jsonify({'error': 'Error happens while submitting leaves'}), 405
    
 
 
